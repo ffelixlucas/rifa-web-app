@@ -10,6 +10,20 @@ async function buscarRifaPorId(id) {
   }
 }
 
-module.exports = {
-  buscarRifaPorId
-};
+async function buscarNumerosPorRifaId(rifaId) {
+    try {
+      const result = await pool.query(
+        'SELECT * FROM numeros WHERE rifa_id = $1 ORDER BY numero ASC',
+        [rifaId]
+      );
+      return result.rows;
+    } catch (error) {
+      console.error('Erro ao buscar números da rifa:', error);
+      throw error;
+    }
+  }
+  
+  module.exports = {
+    buscarRifaPorId,
+    buscarNumerosPorRifaId
+  };

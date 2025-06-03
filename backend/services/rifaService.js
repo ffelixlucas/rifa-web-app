@@ -12,6 +12,21 @@ async function obterRifaPorId(id) {
   return rifa;
 }
 
-module.exports = {
-  obterRifaPorId
-};
+async function obterNumerosPorRifaId(rifaId) {
+    const numeros = await rifaRepository.buscarNumerosPorRifaId(rifaId);
+  
+    if (!numeros || numeros.length === 0) {
+      const erro = new Error('Nenhum número encontrado para esta rifa');
+      erro.status = 404;
+      throw erro;
+    }
+  
+    return numeros;
+  }
+
+  
+  module.exports = {
+    obterRifaPorId,
+    obterNumerosPorRifaId
+  };
+  
