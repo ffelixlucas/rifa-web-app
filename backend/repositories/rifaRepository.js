@@ -2,12 +2,14 @@ const pool = require("../database/connection");
 
 async function criarRifa(rifa) {
   const query = `
-    INSERT INTO rifas (
-      titulo, descricao, valorNumero, dataSorteio,
-      chavePix, banco, mensagemFinal, totalNumeros, imagemUrl, finalizada
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,FALSE)
-    RETURNING *;
-  `;
+  INSERT INTO rifas (
+    titulo, descricao, valorNumero, dataSorteio,
+    chavePix, banco, mensagemFinal, totalNumeros,
+    imagemUrl, telefoneContato, finalizada
+  ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,FALSE)
+  RETURNING *;
+`;
+
   const values = [
     rifa.titulo,
     rifa.descricao,
@@ -18,6 +20,7 @@ async function criarRifa(rifa) {
     rifa.mensagemFinal,
     rifa.totalNumeros,
     rifa.imagemUrl || null,
+    rifa.telefoneContato || null,
   ];
   const result = await pool.query(query, values);
   return result.rows[0];
@@ -110,7 +113,7 @@ async function atualizarRifa(id, dados) {
     dados.mensagemFinal,
     dados.totalNumeros,
     dados.imagemUrl || null,
-    id
+    id,
   ];
 
   const result = await pool.query(query, values);
