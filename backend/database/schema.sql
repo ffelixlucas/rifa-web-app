@@ -1,6 +1,6 @@
 -- Criação da tabela de rifas
 CREATE TABLE IF NOT EXISTS rifas (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   titulo TEXT,
   descricao TEXT,
   valorNumero TEXT,
@@ -13,12 +13,11 @@ CREATE TABLE IF NOT EXISTS rifas (
 
 -- Criação da tabela de números
 CREATE TABLE IF NOT EXISTS numeros (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id SERIAL PRIMARY KEY,
   numero INTEGER,
   status TEXT DEFAULT 'disponivel',
   nome TEXT,
-  rifa_id INTEGER,
-  FOREIGN KEY (rifa_id) REFERENCES rifas(id) ON DELETE CASCADE
+  rifa_id INTEGER REFERENCES rifas(id) ON DELETE CASCADE
 );
 
 -- Seed: cria uma rifa base
@@ -34,4 +33,12 @@ INSERT INTO rifas (
   'Banco Inter - Taylaine',
   'Obrigada desde já pelo apoio e carinho! 💖',
   100
+);
+
+-- Criação da tabela de usuários (para login admin)
+CREATE TABLE IF NOT EXISTS usuarios (
+  id SERIAL PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  senha TEXT NOT NULL,
+  role TEXT DEFAULT 'admin'
 );
