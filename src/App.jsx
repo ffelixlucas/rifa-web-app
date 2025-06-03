@@ -8,7 +8,6 @@ function App() {
         <Route path="/admin/login" element={<LoginPage />} />
         {/* Outras rotas virão aqui futuramente */}
       </Routes>
-      <div className="bg-green-500 text-white p-4">Hello, Tailwind!</div>
 
     </Router>
   );
