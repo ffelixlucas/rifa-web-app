@@ -1,25 +1,25 @@
-const db = require('./connection');
+require('dotenv').config();
+console.log('URL do banco carregada:', process.env.DATABASE_URL);
+const pool = require('./connection');
 
-const TOTAL_NUMEROS = 100;
-const RIFA_ID = 1;
+async function seedNumeros() {
+  const total = 100;
+  const rifaId = 1;
 
-function inserirNumeros() {
-  db.serialize(() => {
-    const stmt = db.prepare('INSERT INTO numeros (numero, rifa_id) VALUES (?, ?)');
-
-    for (let i = 1; i <= TOTAL_NUMEROS; i++) {
-      stmt.run(i, RIFA_ID);
+  try {
+    for (let i = 1; i <= total; i++) {
+      await pool.query(
+        'INSERT INTO numeros (numero, status, nome, rifa_id) VALUES ($1, $2, $3, $4)',
+        [i, 'disponivel', null, rifaId]
+      );
     }
 
-    stmt.finalize((err) => {
-      if (err) {
-        console.error('Erro ao finalizar inserção:', err.message);
-      } else {
-        console.log('✅ Números inseridos com sucesso!');
-      }
-      db.close();
-    });
-  });
+    console.log(`${total} números inseridos com sucesso.`);
+  } catch (error) {
+    console.error('Erro ao inserir números:', error);
+  } finally {
+    await pool.end();
+  }
 }
 
-inserirNumeros();
+seedNumeros();
