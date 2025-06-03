@@ -53,7 +53,9 @@ function RifaPage() {
         <p className="text-sm sm:text-base text-gray-700 mb-1">
           <span className="font-semibold">Sorteio:</span>{" "}
           <span className="text-gray-800">
-            {new Date(rifa.datasorteio).toLocaleDateString("pt-BR")}
+            {rifa.datasorteio
+              ? new Date(rifa.datasorteio).toLocaleDateString("pt-BR")
+              : "Data não definida"}
           </span>
         </p>
 
