@@ -59,6 +59,16 @@ async function buscarNumerosPorRifaId(rifaId) {
   }
 }
 
+async function buscarTodasRifas() {
+  try {
+    const result = await pool.query('SELECT * FROM rifas ORDER BY id DESC');
+    return result.rows;
+  } catch (error) {
+    console.error("Erro ao buscar todas as rifas:", error);
+    throw error;
+  }
+}
+
 async function atualizarRifa(id, dados) {
   const query = `
     UPDATE rifas
@@ -113,6 +123,7 @@ module.exports = {
   gerarNumeros,
   buscarRifaPorId,
   buscarNumerosPorRifaId,
+  buscarTodasRifas,
   atualizarRifa,
   excluirRifa,
   finalizarRifa,

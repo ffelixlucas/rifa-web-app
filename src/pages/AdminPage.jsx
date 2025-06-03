@@ -1,10 +1,33 @@
+import { useEffect, useState } from 'react';
+import RifaCard from '../components/RifaCard';
+
 function AdminPage() {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-green-100">
-        <h1 className="text-2xl font-bold text-green-700">Painel Administrativo</h1>
-      </div>
-    );
-  }
-  
-  export default AdminPage;
-  
+  const [rifas, setRifas] = useState([]);
+
+  useEffect(() => {
+    async function carregarRifas() {
+      try {
+        const resposta = await fetch(`${import.meta.env.VITE_API_URL}/rifas`);
+        const dados = await resposta.json();
+        setRifas(dados);
+      } catch (err) {
+        console.error('Erro ao carregar rifas:', err);
+      }
+    }
+
+    carregarRifas();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gray-100 py-6 px-4">
+      <h1 className="text-2xl font-bold mb-4 text-center">Minhas Rifas</h1>
+      {rifas.length === 0 ? (
+        <p className="text-center text-gray-500">Nenhuma rifa encontrada.</p>
+      ) : (
+        rifas.map((rifa) => <RifaCard key={rifa.id} rifa={rifa} />)
+      )}
+    </div>
+  );
+}
+
+export default AdminPage;

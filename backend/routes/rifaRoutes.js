@@ -8,6 +8,7 @@ router.get('/rifas/:id', rifaController.getRifaPorId);
 router.get('/rifas/:id/numeros', rifaController.getNumerosPorRifaId);
 
 // Rotas protegidas
+router.get('/rifas', verificarToken, rifaController.getTodasRifas); // LISTAR TODAS
 router.post('/rifas', verificarToken, rifaController.criarRifa);
 router.put('/rifas/:id', verificarToken, rifaController.atualizarRifa);
 router.delete('/rifas/:id', verificarToken, rifaController.excluirRifa);

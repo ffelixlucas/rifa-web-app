@@ -30,6 +30,15 @@ async function getNumerosPorRifaId(req, res) {
   }
 }
 
+async function getTodasRifas(req, res) {
+  try {
+    const rifas = await rifaService.obterTodasRifas();
+    res.json(rifas);
+  } catch (error) {
+    res.status(error.status || 500).json({ erro: error.message });
+  }
+}
+
 async function atualizarRifa(req, res) {
   const { id } = req.params;
   const dados = req.body;
@@ -65,6 +74,7 @@ module.exports = {
   criarRifa,
   getRifaPorId,
   getNumerosPorRifaId,
+  getTodasRifas,
   atualizarRifa,
   excluirRifa,
   finalizarRifa,
