@@ -2,12 +2,12 @@ const pool = require("../database/connection");
 
 async function criarRifa(rifa) {
   const query = `
-  INSERT INTO rifas (
-    titulo, descricao, valorNumero, dataSorteio,
-    chavePix, banco, mensagemFinal, totalNumeros,
-    imagemUrl, telefoneContato, finalizada
-  ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,FALSE)
-  RETURNING *;
+INSERT INTO rifas (
+  titulo, descricao, valorNumero, dataSorteio,
+  chavePix, banco, mensagemFinal, totalNumeros,
+  imagemUrl, telefoneContato, descricaopremio, finalizada
+) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,FALSE)
+ RETURNING *;
 `;
 
   const values = [
@@ -21,7 +21,9 @@ async function criarRifa(rifa) {
     rifa.totalNumeros,
     rifa.imagemUrl || null,
     rifa.telefoneContato || null,
+    rifa.descricaoPremio || null,
   ];
+
   const result = await pool.query(query, values);
   return result.rows[0];
 }
@@ -76,7 +78,8 @@ async function buscarTodasRifas() {
         mensagemFinal,
         totalNumeros,
         imagemUrl,
-        finalizada
+        finalizada,
+        descricaoPremio
       FROM rifas
       ORDER BY id DESC
     `);
@@ -98,9 +101,11 @@ async function atualizarRifa(id, dados) {
         banco = $6,
         mensagemFinal = $7,
         totalNumeros = $8,
-        imagemUrl = $9
-    WHERE id = $10
+        imagemUrl = $9,
+        descricaoPremio = $10
+    WHERE id = $11
     RETURNING *;
+
   `;
 
   const values = [
@@ -113,6 +118,7 @@ async function atualizarRifa(id, dados) {
     dados.mensagemFinal,
     dados.totalNumeros,
     dados.imagemUrl || null,
+    dados.descricaoPremio || null,
     id,
   ];
 
