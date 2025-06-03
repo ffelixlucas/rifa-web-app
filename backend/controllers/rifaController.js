@@ -1,4 +1,4 @@
-const rifaService = require('../services/rifaService');
+const rifaService = require("../services/rifaService");
 
 async function criarRifa(req, res) {
   try {
@@ -14,8 +14,16 @@ async function getRifaPorId(req, res) {
   const { id } = req.params;
   try {
     const rifa = await rifaService.obterRifaPorId(id);
+
+    if (!rifa) {
+      return res.status(404).json({ erro: "Rifa não encontrada" });
+    }
+
+    console.log("🎯 Rifa encontrada:", rifa); // 🔍 Aqui o segredo
+
     res.json(rifa);
   } catch (error) {
+    console.error("❌ Erro ao buscar rifa por ID:", error);
     res.status(error.status || 500).json({ erro: error.message });
   }
 }
