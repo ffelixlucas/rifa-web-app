@@ -7,14 +7,20 @@ function AdminPage() {
   useEffect(() => {
     async function carregarRifas() {
       try {
-        const resposta = await fetch(`${import.meta.env.VITE_API_URL}/rifas`);
+        const resposta = await fetch(`${import.meta.env.VITE_API_URL}/rifas`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+  
         const dados = await resposta.json();
+        console.log('🔍 Dados recebidos da API /rifas:', dados); // ⬅️ Aqui você vai ver o que está vindo
         setRifas(dados);
       } catch (err) {
         console.error('Erro ao carregar rifas:', err);
       }
     }
-
+  
     carregarRifas();
   }, []);
 
