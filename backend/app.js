@@ -8,15 +8,9 @@ const app = express();
 const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || [];
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // Permite chamadas sem origin (ex: Postman) ou de domínios permitidos
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('CORS não permitido para esta origem'));
-    }
-  }
+  origin: true
 }));
+
 
 app.use(express.json());
 
