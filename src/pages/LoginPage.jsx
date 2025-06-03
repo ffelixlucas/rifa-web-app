@@ -1,23 +1,23 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { login } from '../services/authService';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { login } from "../../services/authService";
 
 function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [erro, setErro] = useState('');
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErro('');
+    setErro("");
 
     try {
       const token = await login(email, senha);
-      localStorage.setItem('token', token);
-      navigate('/admin'); // redireciona para a próxima tela (em breve)
+      localStorage.setItem("token", token);
+      navigate("/admin"); // redireciona para a próxima tela (em breve)
     } catch (err) {
-      setErro('Credenciais inválidas. Tente novamente.');
+      setErro("Credenciais inválidas. Tente novamente.");
     }
   };
 
