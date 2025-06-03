@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import NumeroModal from "../components/NumeroModal.jsx";
+import PremioModal from "../components/PremioModal.jsx";
+
 
 function AdminRifaPage() {
   const { id } = useParams();
