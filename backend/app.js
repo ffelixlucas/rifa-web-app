@@ -12,6 +12,9 @@ const authRoutes = require('./routes/authRoutes');
 app.use('/api', authRoutes);
 
 const verificarToken = require('./middleware/authMiddleware');
+const numeroRoutes = require('./routes/numeroRoutes');
+app.use('/api', numeroRoutes);
+
 
 // Rota protegida de exemplo
 app.get('/admin', verificarToken, (req, res) => {
