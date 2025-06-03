@@ -61,7 +61,22 @@ async function buscarNumerosPorRifaId(rifaId) {
 
 async function buscarTodasRifas() {
   try {
-    const result = await pool.query('SELECT * FROM rifas ORDER BY id DESC');
+    const result = await pool.query(`
+      SELECT 
+        id,
+        titulo,
+        descricao,
+        valorNumero,
+        dataSorteio AS "dataSorteio",
+        chavePix,
+        banco,
+        mensagemFinal,
+        totalNumeros,
+        imagemUrl,
+        finalizada
+      FROM rifas
+      ORDER BY id DESC
+    `);
     return result.rows;
   } catch (error) {
     console.error("Erro ao buscar todas as rifas:", error);
