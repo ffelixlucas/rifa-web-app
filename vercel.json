@@ -7,7 +7,6 @@
           "distDir": "dist"
         }
       }
-    ],
-    "ignoreCommand": "echo Ignorando backend/"
+    ]
   }
   
