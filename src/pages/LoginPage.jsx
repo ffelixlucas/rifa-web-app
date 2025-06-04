@@ -5,12 +5,13 @@ import { login } from "../../services/authService";
 function LoginPage() {
   const navigate = useNavigate(); // ✅ Movido para o topo, antes do useEffect
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/admin");
-    }
-  }, []);
+// useEffect(() => {
+//   const token = localStorage.getItem("token");
+//   if (token) {
+//     navigate("/admin");
+//   }
+// }, []);
+
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
