@@ -11,6 +11,8 @@ async function criarRifa(req, res) {
 }
 
 async function getRifaPorId(req, res) {
+  console.log("🔐 Rota protegida /admin/rifas/:id acessada");
+
   const { id } = req.params;
   try {
     const rifa = await rifaService.obterRifaPorId(id);
