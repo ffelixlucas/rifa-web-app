@@ -66,7 +66,7 @@ function PagamentoModal({ numero, rifa, onClose }) {
 
           <div>
             <div className="flex justify-between items-center mb-1">
-              <p className="text-sm text-gray-600">Chave Pix</p>
+              <p className="text-sm text-gray-600">Chave Pix (CPF)</p>
               <button
                 onClick={handleCopyPix}
                 disabled={!chavePix}
