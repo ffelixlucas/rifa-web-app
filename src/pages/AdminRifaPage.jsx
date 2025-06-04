@@ -21,16 +21,15 @@ function AdminRifaPage() {
             },
           }
         );
-  
+
         if (!resRifa.ok) {
           const erroTexto = await resRifa.text();
           throw new Error(`Erro ao buscar rifa: ${resRifa.status} - ${erroTexto}`);
         }
-        
-  
+
         const dadosRifa = await resRifa.json();
         setRifa(dadosRifa);
-  
+
         const resNumeros = await fetch(
           `${import.meta.env.VITE_API_URL}/rifas/${id}/numeros`
         );
@@ -38,18 +37,17 @@ function AdminRifaPage() {
         setNumeros(dadosNumeros);
       } catch (error) {
         console.error("Erro ao carregar dados da rifa:", error);
-  
-        // Verifica se é erro 401 ou 403
+
         if (error.message.includes("401") || error.message.includes("403")) {
           localStorage.removeItem("token");
           window.location.href = "/admin/login";
         }
       }
     }
-  
-    carregarDados(); // <- essa é a chamada da função
+
+    carregarDados();
   }, [id]);
-  
+
   const numerosFiltrados =
     filtroStatus === "todos"
       ? numeros
@@ -84,51 +82,24 @@ function AdminRifaPage() {
 
       <div className="mx-auto max-w-5xl px-4 py-4 sm:px-6">
         <div className="flex gap-2 overflow-x-auto pb-2">
-          <button
-            onClick={() => setFiltroStatus("todos")}
-            className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
-              filtroStatus === "todos"
-                ? "bg-indigo-600 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            Todos
-          </button>
-          <button
-            onClick={() => setFiltroStatus("disponivel")}
-            className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
-              filtroStatus === "disponivel"
-                ? "bg-indigo-600 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            Disponível
-          </button>
-          <button
-            onClick={() => setFiltroStatus("reservado")}
-            className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
-              filtroStatus === "reservado"
-                ? "bg-indigo-600 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            Reservado
-          </button>
-          <button
-            onClick={() => setFiltroStatus("pago")}
-            className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
-              filtroStatus === "pago"
-                ? "bg-indigo-600 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            Pago
-          </button>
+          {["todos", "disponivel", "reservado", "pago"].map((status) => (
+            <button
+              key={status}
+              onClick={() => setFiltroStatus(status)}
+              className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+                filtroStatus === status
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              {status[0].toUpperCase() + status.slice(1)}
+            </button>
+          ))}
         </div>
       </div>
 
       <div className="mx-auto max-w-5xl px-4 pb-6 sm:px-6">
-        <div className="grid grid-cols-8 gap-2 sm:grid-cols-10">
+        <div className="grid grid-cols-8 gap-2 sm:grid-cols-10 lg:grid-cols-12 lg:gap-4">
           {numerosFiltrados.map((num) => (
             <div className="relative" key={num.id}>
               <div
@@ -136,14 +107,14 @@ function AdminRifaPage() {
                   setNumeroSelecionado(num);
                   setModalAberto(true);
                 }}
-                className={`cursor-pointer w-10 h-10 sm:w-11 sm:h-11 rounded-md p-1 text-center shadow-sm transition-all duration-200 hover:shadow-md flex flex-col items-center justify-center
-          ${
-            num.status === "disponivel"
-              ? "bg-white border border-gray-200 text-gray-800"
-              : num.status === "reservado"
-              ? "bg-yellow-100 text-yellow-800"
-              : "bg-green-100 text-green-800"
-          }`}
+                className={`cursor-pointer w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-md p-1 text-center shadow-sm transition-all duration-200 hover:shadow-md flex flex-col items-center justify-center
+                  ${
+                    num.status === "disponivel"
+                      ? "bg-white border border-gray-200 text-gray-800"
+                      : num.status === "reservado"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-green-100 text-green-800"
+                  }`}
               >
                 {num.status === "pago" && (
                   <div className="text-[10px] font-medium leading-none">
