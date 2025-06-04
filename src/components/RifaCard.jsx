@@ -15,6 +15,11 @@ function RifaCard({ rifa }) {
 
   useEffect(() => {
     async function carregarNumeros() {
+      if (document.visibilityState !== "visible") {
+        console.log("🙈 Aba não visível — ignorando fetch do RifaCard");
+        return;
+      }
+  
       try {
         const resposta = await fetch(
           `${import.meta.env.VITE_API_URL}/rifas/${rifa.id}/numeros`
@@ -27,8 +32,10 @@ function RifaCard({ rifa }) {
         console.error("Erro ao buscar números da rifa:", error);
       }
     }
+  
     carregarNumeros();
   }, [rifa.id]);
+  
 
   const status = rifa.finalizada ? "Finalizada" : "Ativa";
 
