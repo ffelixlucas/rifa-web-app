@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 
 function NumeroModal({ numero, onClose, onSalvar }) {
   const [nome, setNome] = useState('');
-  const [status, setStatus] = useState('disponivel');
+  const [status, setStatus] = useState('pago');
 
   useEffect(() => {
     if (numero) {
       setNome(numero.nome || '');
-      setStatus(numero.status);
+      setStatus(numero.status === "disponivel" ? "pago" : numero.status);
     }
   }, [numero]);
 
@@ -57,9 +57,8 @@ function NumeroModal({ numero, onClose, onSalvar }) {
           onChange={(e) => setStatus(e.target.value)}
           className="w-full border rounded px-3 py-2 mb-4"
         >
-          <option value="disponivel">Disponível</option>
-          <option value="reservado">Reservado</option>
           <option value="pago">Pago</option>
+          <option value="reservado">Reservado</option>
         </select>
 
         <div className="flex justify-end gap-2">
