@@ -31,18 +31,37 @@ function RifaPage() {
   }
 
   useEffect(() => {
-    carregarDados(); // carrega uma vez logo ao abrir
+    let intervalo;
 
-    const intervalo = setInterval(() => {
-      if (document.visibilityState === "visible") {
-        console.log("👀 Aba visível — atualizando rifa");
+    function iniciarAtualizacao() {
+      intervalo = setInterval(() => {
+        console.log("🔁 Atualizando rifa (aba visível)");
         carregarDados();
-      } else {
-        console.log("🙈 Aba não visível — sem atualização");
-      }
-    }, 15000); // Atualiza a cada 15 segundos
+      }, 15000);
+    }
 
-    return () => clearInterval(intervalo);
+    function pararAtualizacao() {
+      console.log("⏸️ Parando atualizações (aba invisível)");
+      clearInterval(intervalo);
+    }
+
+    function verificarVisibilidade() {
+      if (document.visibilityState === "visible") {
+        iniciarAtualizacao();
+      } else {
+        pararAtualizacao();
+      }
+    }
+
+    // Primeira verificação e setup
+    carregarDados();
+    verificarVisibilidade();
+    document.addEventListener("visibilitychange", verificarVisibilidade);
+
+    return () => {
+      clearInterval(intervalo);
+      document.removeEventListener("visibilitychange", verificarVisibilidade);
+    };
   }, [id]);
 
   if (!rifa) {
