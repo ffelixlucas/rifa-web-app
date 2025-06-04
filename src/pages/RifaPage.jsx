@@ -12,6 +12,7 @@ function RifaPage() {
   const [modalPremioAberto, setModalPremioAberto] = useState(false);
 
   async function carregarDados() {
+    console.log("⏰ Rodando carregarDados()"); // <- esse carinha aqui
     try {
       const resRifa = await fetch(
         `${import.meta.env.VITE_API_URL}/rifas/${id}`
@@ -30,8 +31,17 @@ function RifaPage() {
   }
 
   useEffect(() => {
-    carregarDados();
-    const intervalo = setInterval(carregarDados, 5000); // Atualiza a cada 5s
+    carregarDados(); // carrega uma vez logo ao abrir
+
+    const intervalo = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        console.log("👀 Aba visível — atualizando rifa");
+        carregarDados();
+      } else {
+        console.log("🙈 Aba não visível — sem atualização");
+      }
+    }, 15000); // Atualiza a cada 15 segundos
+
     return () => clearInterval(intervalo);
   }, [id]);
 
