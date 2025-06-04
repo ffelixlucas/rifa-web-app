@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import NumeroModal from "../components/NumeroModal.jsx";
 
-
 function AdminRifaPage() {
   const { id } = useParams();
   const [rifa, setRifa] = useState(null);
@@ -15,11 +14,23 @@ function AdminRifaPage() {
     async function carregarDados() {
       try {
         const resRifa = await fetch(
-          `${import.meta.env.VITE_API_URL}/rifas/${id}`
+          `${import.meta.env.VITE_API_URL}/admin/rifas/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
+  
+        if (!resRifa.ok) {
+          const erroTexto = await resRifa.text();
+          throw new Error(`Erro ao buscar rifa: ${resRifa.status} - ${erroTexto}`);
+        }
+        
+  
         const dadosRifa = await resRifa.json();
         setRifa(dadosRifa);
-
+  
         const resNumeros = await fetch(
           `${import.meta.env.VITE_API_URL}/rifas/${id}/numeros`
         );
@@ -27,12 +38,18 @@ function AdminRifaPage() {
         setNumeros(dadosNumeros);
       } catch (error) {
         console.error("Erro ao carregar dados da rifa:", error);
+  
+        // Verifica se é erro 401 ou 403
+        if (error.message.includes("401") || error.message.includes("403")) {
+          localStorage.removeItem("token");
+          window.location.href = "/admin/login";
+        }
       }
     }
-
-    carregarDados();
+  
+    carregarDados(); // <- essa é a chamada da função
   }, [id]);
-
+  
   const numerosFiltrados =
     filtroStatus === "todos"
       ? numeros
