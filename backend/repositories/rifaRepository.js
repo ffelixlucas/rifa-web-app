@@ -142,6 +142,64 @@ async function finalizarRifa(id) {
   return result.rows[0];
 }
 
+async function sortearNumeroPago(rifaId) {
+  // 1. Buscar todos os números com status = 'pago' e que ainda NÃO foram sorteados
+  const query = `
+    SELECT n.*
+    FROM numeros n
+    WHERE n.rifa_id = $1
+      AND n.status = 'pago'
+      AND NOT EXISTS (
+        SELECT 1 FROM sorteios s
+        WHERE s.numero_id = n.id
+        AND s.rifa_id = $1
+      );
+  `;
+
+  const result = await pool.query(query, [rifaId]);
+  const numerosValidos = result.rows;
+
+  if (numerosValidos.length === 0) {
+    throw new Error("Nenhum número restante para sortear.");
+  }
+
+  // 2. Escolher um número aleatório
+  const indiceSorteado = Math.floor(Math.random() * numerosValidos.length);
+  const numeroSorteado = numerosValidos[indiceSorteado];
+
+  // 3. Verificar quantos sorteios já ocorreram para essa rifa
+  const resContagem = await pool.query(
+    `SELECT COUNT(*) FROM sorteios WHERE rifa_id = $1`,
+    [rifaId]
+  );
+  const colocacao = parseInt(resContagem.rows[0].count) + 1;
+
+  // 4. Registrar o sorteio
+  await pool.query(
+    `INSERT INTO sorteios (rifa_id, numero_id, colocacao) VALUES ($1, $2, $3)`,
+    [rifaId, numeroSorteado.id, colocacao]
+  );
+
+  // 5. Retornar os dados
+  return {
+    numero: numeroSorteado.numero,
+    nome: numeroSorteado.nome,
+    colocacao: colocacao,
+  };
+}
+
+async function listarSorteiosDaRifa(rifaId) {
+  const query = `
+    SELECT s.colocacao, n.numero, n.nome, s.data
+    FROM sorteios s
+    JOIN numeros n ON s.numero_id = n.id
+    WHERE s.rifa_id = $1
+    ORDER BY s.colocacao ASC;
+  `;
+  const result = await pool.query(query, [rifaId]);
+  return result.rows;
+}
+
 module.exports = {
   criarRifa,
   gerarNumeros,
@@ -151,4 +209,6 @@ module.exports = {
   atualizarRifa,
   excluirRifa,
   finalizarRifa,
+  sortearNumeroPago,
+  listarSorteiosDaRifa,
 };

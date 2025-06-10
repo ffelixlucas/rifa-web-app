@@ -59,6 +59,30 @@ async function finalizarRifa(id) {
   }
   return await rifaRepository.finalizarRifa(id);
 }
+async function sortearNumeroPago(rifaId) {
+  const rifaExistente = await rifaRepository.buscarRifaPorId(rifaId);
+
+  if (!rifaExistente) {
+    const erro = new Error('Rifa não encontrada');
+    erro.status = 404;
+    throw erro;
+  }
+
+  const resultado = await rifaRepository.sortearNumeroPago(rifaId);
+  return resultado; // { numero, nome, colocacao }
+}
+async function listarSorteiosDaRifa(rifaId) {
+  const rifaExistente = await rifaRepository.buscarRifaPorId(rifaId);
+  if (!rifaExistente) {
+    const erro = new Error('Rifa não encontrada');
+    erro.status = 404;
+    throw erro;
+  }
+  return await rifaRepository.listarSorteiosDaRifa(rifaId);
+}
+
+
+
 
 module.exports = {
   criarRifaComNumeros,
@@ -68,4 +92,7 @@ module.exports = {
   atualizarRifa,
   excluirRifa,
   finalizarRifa,
+  sortearNumeroPago,
+  listarSorteiosDaRifa,
+
 };

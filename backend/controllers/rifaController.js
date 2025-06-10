@@ -79,6 +79,29 @@ async function finalizarRifa(req, res) {
     res.status(error.status || 500).json({ erro: error.message });
   }
 }
+async function sortearNumeroDaRifa(req, res) {
+  const { id } = req.params;
+
+  try {
+    const resultado = await rifaService.sortearNumeroPago(id);
+    res.json(resultado); // Ex: { numero: 42, nome: 'Lara Liz', colocacao: 1 }
+  } catch (error) {
+    console.error("❌ Erro ao sortear número:", error);
+    res.status(error.status || 500).json({ erro: error.message });
+  }
+}
+async function listarSorteiosDaRifa(req, res) {
+  const { id } = req.params;
+
+  try {
+    const sorteios = await rifaService.listarSorteiosDaRifa(id);
+    res.json(sorteios);
+  } catch (error) {
+    console.error("❌ Erro ao listar sorteios:", error);
+    res.status(error.status || 500).json({ erro: error.message });
+  }
+}
+
 
 module.exports = {
   criarRifa,
@@ -88,4 +111,6 @@ module.exports = {
   atualizarRifa,
   excluirRifa,
   finalizarRifa,
+  sortearNumeroDaRifa,
+  listarSorteiosDaRifa
 };

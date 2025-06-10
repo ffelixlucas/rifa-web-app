@@ -16,6 +16,10 @@ router.post('/rifas', verificarToken, rifaController.criarRifa);
 router.put('/rifas/:id', verificarToken, rifaController.atualizarRifa);
 router.delete('/rifas/:id', verificarToken, rifaController.excluirRifa);
 router.patch('/rifas/:id/finalizar', verificarToken, rifaController.finalizarRifa);
+router.get('/rifas/:id/sorteio', verificarToken, rifaController.sortearNumeroDaRifa);
+router.get('/rifas/:id/sorteios', verificarToken, rifaController.listarSorteiosDaRifa);
+
+
 
 
 module.exports = router;
