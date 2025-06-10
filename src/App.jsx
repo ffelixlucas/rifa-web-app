@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 import AdminRifaPage from "./pages/AdminRifaPage.jsx";
 import RifaPage from "./pages/RifaPage.jsx";
+import SorteioPage from "./pages/SorteioPage.jsx";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/admin/login" element={<LoginPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/admin/rifa/:id" element={<AdminRifaPage />} />
+        <Route path="/admin/rifa/:id/sorteio" element={<SorteioPage />} />
         <Route path="/rifa/:id" element={<RifaPage />} />
       </Routes>
     </Router>
