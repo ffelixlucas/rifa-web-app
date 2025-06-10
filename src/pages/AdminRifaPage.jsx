@@ -70,13 +70,23 @@ function AdminRifaPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="sticky top-0 z-10 bg-white shadow-sm">
         <div className="mx-auto max-w-5xl px-4 py-4 sm:px-6">
-          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-            {rifa.titulo}
-          </h1>
-          <p className="mt-1 text-sm text-gray-500 sm:text-base">
-            Total de Números:{" "}
-            <span className="font-medium">{rifa.totalNumeros}</span>
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+                {rifa.titulo}
+              </h1>
+              <p className="mt-1 text-sm text-gray-500 sm:text-base">
+                Total de Números:{" "}
+                <span className="font-medium">{rifa.totalnumeros}</span>
+              </p>
+            </div>
+            <a
+              href={`/admin/rifa/${id}/sorteio`}
+              className="inline-block rounded-md bg-green-600 px-4 py-2 text-white font-medium text-sm hover:bg-green-700 transition"
+            >
+              🎉 Sortear Ganhador
+            </a>
+          </div>
         </div>
       </div>
 
