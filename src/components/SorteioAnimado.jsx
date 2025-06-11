@@ -35,8 +35,13 @@ function SorteioAnimado({ rifaId, onFinalizar }) {
       const total = 40 + Math.floor(Math.random() * 30);
 
       const intervalo = setInterval(() => {
-        const aleatorio = Math.floor(Math.random() * 100) + 1;
-        setContador(aleatorio);
+        if (contadorInterno < total - 1) {
+          const aleatorio = Math.floor(Math.random() * 100) + 1;
+          setContador(aleatorio);
+        } else {
+          setContador(resultado.numero); // O último número mostrado é o verdadeiro!
+        }
+        
         contadorInterno++;
 
         if (contadorInterno >= total) {
