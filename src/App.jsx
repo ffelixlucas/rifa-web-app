@@ -10,14 +10,15 @@ import AdminPage from "./pages/AdminPage.jsx";
 import AdminRifaPage from "./pages/AdminRifaPage.jsx";
 import RifaPage from "./pages/RifaPage.jsx";
 import SorteioPage from "./pages/SorteioPage.jsx";
+import CriarRifaPage from "./pages/CriarRifaPage.jsx";
 
-import ProtectedRoute from "./components/ProtectedRoute.jsx"; // Importa ProtectedRoute
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/rifa/1" />} /> {/* Página principal definida */}
+        <Route path="/" element={<Navigate to="/admin/login" />} />
         <Route path="/admin/login" element={<LoginPage />} />
 
         <Route
@@ -46,6 +47,14 @@ function App() {
         />
 
         <Route path="/rifa/:id" element={<RifaPage />} />
+        <Route
+          path="/admin/criar-rifa"
+          element={
+            <ProtectedRoute>
+              <CriarRifaPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );

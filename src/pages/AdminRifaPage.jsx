@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import NumeroModal from "../components/NumeroModal.jsx";
 
 function AdminRifaPage() {
@@ -9,6 +9,7 @@ function AdminRifaPage() {
   const [filtroStatus, setFiltroStatus] = useState("todos");
   const [modalAberto, setModalAberto] = useState(false);
   const [numeroSelecionado, setNumeroSelecionado] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function carregarDados() {
@@ -24,7 +25,9 @@ function AdminRifaPage() {
 
         if (!resRifa.ok) {
           const erroTexto = await resRifa.text();
-          throw new Error(`Erro ao buscar rifa: ${resRifa.status} - ${erroTexto}`);
+          throw new Error(
+            `Erro ao buscar rifa: ${resRifa.status} - ${erroTexto}`
+          );
         }
 
         const dadosRifa = await resRifa.json();
@@ -40,13 +43,13 @@ function AdminRifaPage() {
 
         if (error.message.includes("401") || error.message.includes("403")) {
           localStorage.removeItem("token");
-          window.location.href = "/admin/login";
+          navigate("/admin/login");
         }
       }
     }
 
     carregarDados();
-  }, [id]);
+  }, [id, navigate]);
 
   const numerosFiltrados =
     filtroStatus === "todos"
@@ -68,28 +71,68 @@ function AdminRifaPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* 🧠 Cabeçalho */}
       <div className="sticky top-0 z-10 bg-white shadow-sm">
         <div className="mx-auto max-w-5xl px-4 py-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-                {rifa.titulo}
-              </h1>
-              <p className="mt-1 text-sm text-gray-500 sm:text-base">
-                Total de Números:{" "}
-                <span className="font-medium">{rifa.totalnumeros}</span>
-              </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate(-1)}
+                className="rounded-full p-2 hover:bg-gray-100 transition"
+                title="Voltar"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 19.5L8.25 12l7.5-7.5"
+                  />
+                </svg>
+              </button>
+
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+                  {rifa.titulo}
+                </h1>
+                <p className="mt-1 text-sm text-gray-500 sm:text-base">
+                  Total de Números:{" "}
+                  <span className="font-medium">{rifa.totalnumeros}</span>
+                </p>
+              </div>
             </div>
-            <a
-              href={`/admin/rifa/${id}/sorteio`}
-              className="inline-block rounded-md bg-green-600 px-4 py-2 text-white font-medium text-sm hover:bg-green-700 transition"
-            >
-              🎉 Sortear Ganhador
-            </a>
+
+            {/* 🔥 Botões */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => navigate(`/admin/rifa/${id}/sorteio`)}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-medium shadow transition"
+              >
+                🎉 Sortear Ganhador
+              </button>
+
+              <button
+                onClick={() => {
+                  const link = `${window.location.origin}/rifa/${id}`;
+                  navigator.clipboard.writeText(link);
+                  alert("Link da página pública copiado! ✅");
+                }}
+                className="border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-black px-5 py-2 rounded-lg font-medium shadow-sm transition flex items-center gap-2"
+              >
+                🔗 Compartilhar Link
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
+      {/* 🟦 Filtros */}
       <div className="mx-auto max-w-5xl px-4 py-4 sm:px-6">
         <div className="flex gap-2 overflow-x-auto pb-2">
           {["todos", "disponivel", "reservado", "pago"].map((status) => (
@@ -108,6 +151,7 @@ function AdminRifaPage() {
         </div>
       </div>
 
+      {/* 🔢 Grid dos Números */}
       <div className="mx-auto max-w-5xl px-4 pb-6 sm:px-6">
         <div className="grid grid-cols-8 gap-2 sm:grid-cols-10 lg:grid-cols-12 lg:gap-4">
           {numerosFiltrados.map((num) => (

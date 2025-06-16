@@ -80,19 +80,15 @@ function RifaPage() {
           </h1>
 
           <p className="text-sm sm:text-base text-gray-700 mb-1">
-            <span className="font-semibold">Sorteio:</span>{" "}
-            <span className="text-gray-800">
-              {rifa.datasorteio
-                ? new Date(rifa.datasorteio).toLocaleDateString("pt-BR")
-                : "Data não definida"}
-            </span>
+            <span className="font-semibold">📅 Sorteio:</span>{" "}
+            {rifa.datasorteio
+              ? new Date(rifa.datasorteio).toLocaleDateString("pt-BR")
+              : "A definir"}
           </p>
 
           <p className="text-sm sm:text-base text-gray-700 mb-3">
             <span className="font-semibold">Valor por número:</span>{" "}
-            <span className="text-green-600 font-bold">
-              {rifa.valornumero}
-            </span>
+            <span className="text-green-600 font-bold">{rifa.valornumero}</span>
           </p>
 
           <button
