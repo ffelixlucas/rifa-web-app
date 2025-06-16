@@ -63,14 +63,14 @@ async function getNumerosPorRifaId(req, res) {
   }
 }
 
-// async function getTodasRifas(req, res) {
-//   try {
-//     const rifas = await rifaService.obterTodasRifas();
-//     res.json(rifas);
-//   } catch (error) {
-//     res.status(error.status || 500).json({ erro: error.message });
-//   }
-// }
+ async function getTodasRifas(req, res) {
+   try {
+     const rifas = await rifaService.obterTodasRifas();
+     res.json(rifas);
+   } catch (error) {
+     res.status(error.status || 500).json({ erro: error.message });
+   }
+ }
 
 
 async function getMinhasRifas(req, res) {

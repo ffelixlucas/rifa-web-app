@@ -4,6 +4,7 @@ const rifaController = require('../controllers/rifaController');
 const verificarToken = require('../middleware/authMiddleware');
 
 // 🔓 Rotas públicas
+router.get('/rifas', rifaController.getTodasRifas);  // 
 router.get('/rifas/:id', rifaController.getRifaPorId);
 router.get('/rifas/:id/numeros', rifaController.getNumerosPorRifaId);
 
