@@ -1,12 +1,18 @@
 const rifaService = require("../services/rifaService");
 
 async function criarRifa(req, res) {
+  const tiposValidos = ["cpf", "celular", "email", "aleatoria", "cnpj"];
+
+  if (!tiposValidos.includes(req.body.tipoChavePix)) {
+    return res.status(400).json({ erro: "Tipo de chave Pix inválido." });
+  }
+
   try {
-    const usuarioId = req.usuario.id; // 👈 Captura do token JWT
+    const usuarioId = req.usuario.id;
 
     const rifaData = {
       ...req.body,
-      usuario_id: usuarioId, // 👈 Adiciona o usuário dono da rifa
+      usuario_id: usuarioId,
     };
 
     const novaRifa = await rifaService.criarRifaComNumeros(rifaData);
@@ -44,7 +50,9 @@ async function getRifaPorIdPrivada(req, res) {
     const rifa = await rifaService.obterRifaPorIdEUsuario(id, usuarioId);
 
     if (!rifa) {
-      return res.status(404).json({ erro: "Rifa não encontrada ou não pertence a você." });
+      return res
+        .status(404)
+        .json({ erro: "Rifa não encontrada ou não pertence a você." });
     }
 
     res.json(rifa);
@@ -54,7 +62,6 @@ async function getRifaPorIdPrivada(req, res) {
   }
 }
 
-
 async function getNumerosPorRifaId(req, res) {
   const { id } = req.params;
 
@@ -62,26 +69,24 @@ async function getNumerosPorRifaId(req, res) {
     const rifa = await rifaService.obterRifaPorId(id);
 
     if (!rifa) {
-      return res.status(404).json({ erro: 'Rifa não encontrada' });
+      return res.status(404).json({ erro: "Rifa não encontrada" });
     }
 
     const numeros = await rifaService.obterNumerosPorRifaId(id);
     res.json(numeros);
-
   } catch (error) {
     res.status(error.status || 500).json({ erro: error.message });
   }
 }
 
- async function getTodasRifas(req, res) {
-   try {
-     const rifas = await rifaService.obterTodasRifas();
-     res.json(rifas);
-   } catch (error) {
-     res.status(error.status || 500).json({ erro: error.message });
-   }
- }
-
+async function getTodasRifas(req, res) {
+  try {
+    const rifas = await rifaService.obterTodasRifas();
+    res.json(rifas);
+  } catch (error) {
+    res.status(error.status || 500).json({ erro: error.message });
+  }
+}
 
 async function getMinhasRifas(req, res) {
   const usuarioId = req.usuario.id;
@@ -92,7 +97,6 @@ async function getMinhasRifas(req, res) {
     res.status(error.status || 500).json({ erro: error.message });
   }
 }
-
 
 async function atualizarRifa(req, res) {
   const { id } = req.params;
@@ -117,7 +121,6 @@ async function excluirRifa(req, res) {
   }
 }
 
-
 async function finalizarRifa(req, res) {
   const { id } = req.params;
   try {
@@ -136,18 +139,19 @@ async function sortearNumeroDaRifa(req, res) {
     const rifa = await rifaService.obterRifaPorIdEUsuario(id, usuarioId);
 
     if (!rifa) {
-      return res.status(404).json({ erro: 'Rifa não encontrada' });
+      return res.status(404).json({ erro: "Rifa não encontrada" });
     }
 
     // 2. Verificar se a rifa pertence ao usuário logado
     if (rifa.usuario_id !== usuarioId) {
-      return res.status(403).json({ erro: 'Acesso negado. Esta rifa não pertence a você.' });
+      return res
+        .status(403)
+        .json({ erro: "Acesso negado. Esta rifa não pertence a você." });
     }
 
     // 3. Executar sorteio
     const resultado = await rifaService.sortearNumeroPago(id);
     res.json(resultado);
-
   } catch (error) {
     console.error("❌ Erro ao sortear número:", error);
     res.status(error.status || 500).json({ erro: error.message });
@@ -166,7 +170,6 @@ async function listarSorteiosDaRifa(req, res) {
   }
 }
 
-
 module.exports = {
   criarRifa,
   getRifaPorId,
@@ -178,5 +181,5 @@ module.exports = {
   excluirRifa,
   finalizarRifa,
   sortearNumeroDaRifa,
-  listarSorteiosDaRifa
+  listarSorteiosDaRifa,
 };

@@ -2,28 +2,29 @@ const pool = require("../database/connection");
 
 async function criarRifa(rifa) {
   const query = `
-    INSERT INTO rifas (
-      titulo, descricao, valorNumero, dataSorteio,
-      chavePix, banco, mensagemFinal, totalNumeros,
-      imagemUrl, telefoneContato, descricaoPremio,
-      finalizada, usuario_id
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,FALSE, $12)
-    RETURNING 
-      id,
-      titulo,
-      descricao,
-      valornumero AS "valorNumero",
-      datasorteio AS "dataSorteio",
-      chavepix AS "chavePix",
-      banco,
-      mensagemfinal AS "mensagemFinal",
-      totalnumeros AS "totalNumeros",
-      imagemurl AS "imagemUrl",
-      telefonecontato AS "telefoneContato",
-      descricaopremio AS "descricaoPremio",
-      finalizada,
-      usuario_id AS "usuario_id";
-  `;
+  INSERT INTO rifas (
+    titulo, descricao, valorNumero, dataSorteio,
+    chavePix, tipoChavePix, banco, mensagemFinal, totalNumeros,
+    imagemUrl, telefoneContato, descricaoPremio,
+    finalizada, usuario_id
+  ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,FALSE, $13)
+  RETURNING 
+    id,
+    titulo,
+    descricao,
+    valornumero AS "valorNumero",
+    datasorteio AS "dataSorteio",
+    chavepix AS "chavePix",
+    tipochavepix AS "tipoChavePix",
+    banco,
+    mensagemfinal AS "mensagemFinal",
+    totalnumeros AS "totalNumeros",
+    imagemurl AS "imagemUrl",
+    telefonecontato AS "telefoneContato",
+    descricaopremio AS "descricaoPremio",
+    finalizada,
+    usuario_id AS "usuario_id";
+`;
 
   const values = [
     rifa.titulo,
@@ -31,6 +32,7 @@ async function criarRifa(rifa) {
     rifa.valorNumero,
     rifa.dataSorteio,
     rifa.chavePix,
+    rifa.tipoChavePix || null,
     rifa.banco,
     rifa.mensagemFinal,
     rifa.totalNumeros,
@@ -44,7 +46,6 @@ async function criarRifa(rifa) {
   return result.rows[0];
 }
 
-
 async function buscarRifasPorUsuarioId(usuarioId) {
   const query = `
     SELECT 
@@ -54,6 +55,7 @@ async function buscarRifasPorUsuarioId(usuarioId) {
       valorNumero,
       dataSorteio AS "dataSorteio",
       chavePix,
+      tipochavepix AS "tipoChavePix",
       banco,
       mensagemFinal,
       totalNumeros,
@@ -73,9 +75,6 @@ async function buscarRifaPorIdEUsuario(id, usuarioId) {
   const result = await pool.query(query, [id, usuarioId]);
   return result.rows[0];
 }
-
-
-
 
 async function gerarNumeros(rifaId, totalNumeros) {
   const queries = [];
@@ -123,6 +122,7 @@ async function buscarTodasRifas() {
         valorNumero,
         dataSorteio AS "dataSorteio",
         chavePix,
+        tipochavepix AS "tipoChavePix",
         banco,
         mensagemFinal,
         totalNumeros,
@@ -141,21 +141,21 @@ async function buscarTodasRifas() {
 
 async function atualizarRifa(id, dados) {
   const query = `
-    UPDATE rifas
-    SET titulo = $1,
-        descricao = $2,
-        valorNumero = $3,
-        dataSorteio = $4,
-        chavePix = $5,
-        banco = $6,
-        mensagemFinal = $7,
-        totalNumeros = $8,
-        imagemUrl = $9,
-        descricaoPremio = $10
-    WHERE id = $11
-    RETURNING *;
-
-  `;
+  UPDATE rifas
+  SET titulo = $1,
+      descricao = $2,
+      valorNumero = $3,
+      dataSorteio = $4,
+      chavePix = $5,
+      tipoChavePix = $6,
+      banco = $7,
+      mensagemFinal = $8,
+      totalNumeros = $9,
+      imagemUrl = $10,
+      descricaoPremio = $11
+  WHERE id = $12
+  RETURNING *;
+`;
 
   const values = [
     dados.titulo,
@@ -163,6 +163,7 @@ async function atualizarRifa(id, dados) {
     dados.valorNumero,
     dados.dataSorteio,
     dados.chavePix,
+    dados.tipoChavePix || null,
     dados.banco,
     dados.mensagemFinal,
     dados.totalNumeros,
@@ -176,7 +177,6 @@ async function atualizarRifa(id, dados) {
 }
 
 async function excluirRifa(id) {
-
   await pool.query(`DELETE FROM sorteios WHERE rifa_id = $1`, [id]);
   await pool.query(`DELETE FROM numeros WHERE rifa_id = $1`, [id]);
   await pool.query(`DELETE FROM rifas WHERE id = $1`, [id]);
@@ -235,7 +235,7 @@ async function sortearNumeroPago(rifaId) {
   return {
     numero: numeroSorteado.numero,
     nome: numeroSorteado.nome,
-    telefone: numeroSorteado.telefone, 
+    telefone: numeroSorteado.telefone,
     colocacao: colocacao,
   };
 }
@@ -257,8 +257,6 @@ async function listarSorteiosDaRifa(rifaId) {
   return result.rows;
 }
 
-
-
 module.exports = {
   criarRifa,
   gerarNumeros,
@@ -273,5 +271,3 @@ module.exports = {
   sortearNumeroPago,
   listarSorteiosDaRifa,
 };
-
-
