@@ -77,9 +77,9 @@ function AdminRifaPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/admin")}
                 className="rounded-full p-2 hover:bg-gray-100 transition"
-                title="Voltar"
+                title="Voltar para Minhas Rifas"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
