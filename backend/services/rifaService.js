@@ -2,9 +2,14 @@ const rifaRepository = require('../repositories/rifaRepository');
 
 async function criarRifaComNumeros(rifaData) {
   const novaRifa = await rifaRepository.criarRifa(rifaData);
+
+  console.log('🟢 ID da nova rifa:', novaRifa.id);
+  console.log('🟢 Total de números recebido:', novaRifa.totalNumeros);
+
   await rifaRepository.gerarNumeros(novaRifa.id, novaRifa.totalNumeros);
   return novaRifa;
 }
+
 
 async function obterRifaPorId(id) {
   const rifa = await rifaRepository.buscarRifaPorId(id);
@@ -15,6 +20,11 @@ async function obterRifaPorId(id) {
   }
   return rifa;
 }
+
+async function obterRifaPorIdEUsuario(id, usuarioId) {
+  return await rifaRepository.buscarRifaPorIdEUsuario(id, usuarioId);
+}
+
 
 async function obterNumerosPorRifaId(rifaId) {
   const numeros = await rifaRepository.buscarNumerosPorRifaId(rifaId);
@@ -44,14 +54,15 @@ async function atualizarRifa(id, dados) {
   }
   return await rifaRepository.atualizarRifa(id, dados);
 }
+async function excluirRifa(id, usuarioId) {
+  const rifa = await rifaRepository.buscarRifaPorIdEUsuario(id, usuarioId);
 
-async function excluirRifa(id) {
-  const rifaExistente = await rifaRepository.buscarRifaPorId(id);
-  if (!rifaExistente) {
-    const erro = new Error('Rifa não encontrada');
+  if (!rifa) {
+    const erro = new Error('Rifa não encontrada ou não pertence a você');
     erro.status = 404;
     throw erro;
   }
+
   await rifaRepository.excluirRifa(id);
 }
 
@@ -92,6 +103,7 @@ async function listarSorteiosDaRifa(rifaId) {
 module.exports = {
   criarRifaComNumeros,
   obterRifaPorId,
+  obterRifaPorIdEUsuario,
   obterNumerosPorRifaId,
   obterTodasRifas,
   obterRifasPorUsuarioId,

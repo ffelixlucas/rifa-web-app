@@ -18,17 +18,14 @@ async function criarRifa(req, res) {
 
 
 async function getRifaPorId(req, res) {
-  console.log("🔐 Rota protegida /admin/rifas/:id acessada");
-
   const { id } = req.params;
+
   try {
     const rifa = await rifaService.obterRifaPorId(id);
 
     if (!rifa) {
-      return res.status(404).json({ erro: "Rifa não encontrada" });
+      return res.status(404).json({ erro: "Rifa não encontrada." });
     }
-
-    console.log("🎯 Rifa encontrada:", rifa); // 🔍 Aqui o segredo
 
     res.json(rifa);
   } catch (error) {
@@ -37,24 +34,37 @@ async function getRifaPorId(req, res) {
   }
 }
 
-async function getNumerosPorRifaId(req, res) {
+async function getRifaPorIdPrivada(req, res) {
+  console.log("🔐 Rota protegida /admin/rifas/:id acessada");
+
   const { id } = req.params;
   const usuarioId = req.usuario.id;
 
   try {
-    // 1. Buscar dados da rifa
+    const rifa = await rifaService.obterRifaPorIdEUsuario(id, usuarioId);
+
+    if (!rifa) {
+      return res.status(404).json({ erro: "Rifa não encontrada ou não pertence a você." });
+    }
+
+    res.json(rifa);
+  } catch (error) {
+    console.error("❌ Erro ao buscar rifa por ID (privada):", error);
+    res.status(error.status || 500).json({ erro: error.message });
+  }
+}
+
+
+async function getNumerosPorRifaId(req, res) {
+  const { id } = req.params;
+
+  try {
     const rifa = await rifaService.obterRifaPorId(id);
 
     if (!rifa) {
       return res.status(404).json({ erro: 'Rifa não encontrada' });
     }
 
-    // 2. Verificar se a rifa pertence ao usuário logado
-    if (rifa.usuario_id !== usuarioId) {
-      return res.status(403).json({ erro: 'Acesso negado. Esta rifa não pertence a você.' });
-    }
-
-    // 3. Buscar e retornar os números da rifa
     const numeros = await rifaService.obterNumerosPorRifaId(id);
     res.json(numeros);
 
@@ -97,13 +107,16 @@ async function atualizarRifa(req, res) {
 
 async function excluirRifa(req, res) {
   const { id } = req.params;
+  const usuarioId = req.usuario.id; // 🔐 Pegando o usuário do token
+
   try {
-    await rifaService.excluirRifa(id);
+    await rifaService.excluirRifa(id, usuarioId);
     res.status(204).send();
   } catch (error) {
     res.status(error.status || 500).json({ erro: error.message });
   }
 }
+
 
 async function finalizarRifa(req, res) {
   const { id } = req.params;
@@ -120,7 +133,7 @@ async function sortearNumeroDaRifa(req, res) {
 
   try {
     // 1. Buscar dados da rifa
-    const rifa = await rifaService.obterRifaPorId(id);
+    const rifa = await rifaService.obterRifaPorIdEUsuario(id, usuarioId);
 
     if (!rifa) {
       return res.status(404).json({ erro: 'Rifa não encontrada' });
@@ -157,6 +170,7 @@ async function listarSorteiosDaRifa(req, res) {
 module.exports = {
   criarRifa,
   getRifaPorId,
+  getRifaPorIdPrivada,
   getNumerosPorRifaId,
   getTodasRifas,
   getMinhasRifas,

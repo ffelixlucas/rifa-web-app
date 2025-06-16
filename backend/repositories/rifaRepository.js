@@ -8,7 +8,21 @@ async function criarRifa(rifa) {
       imagemUrl, telefoneContato, descricaoPremio,
       finalizada, usuario_id
     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,FALSE, $12)
-    RETURNING *;
+    RETURNING 
+      id,
+      titulo,
+      descricao,
+      valornumero AS "valorNumero",
+      datasorteio AS "dataSorteio",
+      chavepix AS "chavePix",
+      banco,
+      mensagemfinal AS "mensagemFinal",
+      totalnumeros AS "totalNumeros",
+      imagemurl AS "imagemUrl",
+      telefonecontato AS "telefoneContato",
+      descricaopremio AS "descricaoPremio",
+      finalizada,
+      usuario_id AS "usuario_id";
   `;
 
   const values = [
@@ -23,12 +37,13 @@ async function criarRifa(rifa) {
     rifa.imagemUrl || null,
     rifa.telefoneContato || null,
     rifa.descricaoPremio || null,
-    rifa.usuario_id, // 👈 Aqui o ID do usuário dono da rifa
+    rifa.usuario_id,
   ];
 
   const result = await pool.query(query, values);
   return result.rows[0];
 }
+
 
 async function buscarRifasPorUsuarioId(usuarioId) {
   const query = `
@@ -52,6 +67,13 @@ async function buscarRifasPorUsuarioId(usuarioId) {
   const result = await pool.query(query, [usuarioId]);
   return result.rows;
 }
+
+async function buscarRifaPorIdEUsuario(id, usuarioId) {
+  const query = `SELECT * FROM rifas WHERE id = $1 AND usuario_id = $2`;
+  const result = await pool.query(query, [id, usuarioId]);
+  return result.rows[0];
+}
+
 
 
 
@@ -154,8 +176,10 @@ async function atualizarRifa(id, dados) {
 }
 
 async function excluirRifa(id) {
-  const query = `DELETE FROM rifas WHERE id = $1`;
-  await pool.query(query, [id]);
+
+  await pool.query(`DELETE FROM sorteios WHERE rifa_id = $1`, [id]);
+  await pool.query(`DELETE FROM numeros WHERE rifa_id = $1`, [id]);
+  await pool.query(`DELETE FROM rifas WHERE id = $1`, [id]);
 }
 
 async function finalizarRifa(id) {
@@ -211,13 +235,19 @@ async function sortearNumeroPago(rifaId) {
   return {
     numero: numeroSorteado.numero,
     nome: numeroSorteado.nome,
+    telefone: numeroSorteado.telefone, 
     colocacao: colocacao,
   };
 }
 
 async function listarSorteiosDaRifa(rifaId) {
   const query = `
-    SELECT s.colocacao, n.numero, n.nome, s.data
+    SELECT 
+      s.colocacao, 
+      n.numero, 
+      n.nome, 
+      n.telefone, -- 🔥 traz o telefone também
+      s.data
     FROM sorteios s
     JOIN numeros n ON s.numero_id = n.id
     WHERE s.rifa_id = $1
@@ -233,6 +263,7 @@ module.exports = {
   criarRifa,
   gerarNumeros,
   buscarRifaPorId,
+  buscarRifaPorIdEUsuario,
   buscarNumerosPorRifaId,
   buscarTodasRifas,
   buscarRifasPorUsuarioId,
