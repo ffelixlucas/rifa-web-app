@@ -84,7 +84,6 @@ function CriarRifaPage() {
         <h1 className="text-2xl font-bold mb-6 text-center">Criar Nova Rifa</h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-
           <input
             type="text"
             name="titulo"
@@ -124,13 +123,33 @@ function CriarRifaPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Data do Sorteio
             </label>
-            <input
-              type="date"
-              name="dataSorteio"
-              value={form.dataSorteio}
-              onChange={handleChange}
-              className="w-full rounded border p-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
+            <div className="flex flex-col gap-1">
+              <input
+                type="date"
+                name="dataSorteio"
+                value={form.dataSorteio}
+                onChange={handleChange}
+                disabled={form.dataSorteio === "indefinido"}
+                className={`w-full rounded border p-2 bg-white ${
+                  form.dataSorteio === "indefinido"
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
+              />
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={form.dataSorteio === "indefinido"}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      dataSorteio: e.target.checked ? "indefinido" : "",
+                    })
+                  }
+                />
+                Sem data definida
+              </label>
+            </div>
           </div>
 
           <input
