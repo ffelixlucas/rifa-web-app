@@ -1,17 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../services/authService";
+import { authService } from "../../services/authService";
 
 function LoginPage() {
-  const navigate = useNavigate(); // ✅ Movido para o topo, antes do useEffect
+  const navigate = useNavigate();
 
-// useEffect(() => {
-//   const token = localStorage.getItem("token");
-//   if (token) {
-//     navigate("/admin");
-//   }
-// }, []);
-
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      navigate("/admin");
+    }
+  }, [navigate]);
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -23,8 +22,8 @@ function LoginPage() {
 
     try {
       const token = await login(email, senha);
-      localStorage.setItem("token", token);
-      navigate("/admin"); // redireciona para a próxima tela (em breve)
+      authService.setToken(token);
+      navigate("/admin");
     } catch (err) {
       setErro("Credenciais inválidas. Tente novamente.");
     }

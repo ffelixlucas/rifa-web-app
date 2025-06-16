@@ -4,11 +4,14 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+
 import LoginPage from "./pages/LoginPage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 import AdminRifaPage from "./pages/AdminRifaPage.jsx";
 import RifaPage from "./pages/RifaPage.jsx";
 import SorteioPage from "./pages/SorteioPage.jsx";
+
+import ProtectedRoute from "./components/ProtectedRoute.jsx"; // Importa ProtectedRoute
 
 function App() {
   return (
@@ -16,9 +19,32 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/rifa/1" />} /> {/* Página principal definida */}
         <Route path="/admin/login" element={<LoginPage />} />
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/admin/rifa/:id" element={<AdminRifaPage />} />
-        <Route path="/admin/rifa/:id/sorteio" element={<SorteioPage />} />
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/rifa/:id"
+          element={
+            <ProtectedRoute>
+              <AdminRifaPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/rifa/:id/sorteio"
+          element={
+            <ProtectedRoute>
+              <SorteioPage />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="/rifa/:id" element={<RifaPage />} />
       </Routes>
     </Router>
