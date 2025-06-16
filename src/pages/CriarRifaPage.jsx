@@ -28,7 +28,7 @@ function CriarRifaPage() {
     e.preventDefault();
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/rifas`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/rifas`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
