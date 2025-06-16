@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 
 function NumeroModal({ numero, onClose, onSalvar }) {
   const [nome, setNome] = useState('');
+  const [telefone, setTelefone] = useState(''); // 👈 Novo
   const [status, setStatus] = useState('pago');
 
   useEffect(() => {
     if (numero) {
       setNome(numero.nome || '');
+      setTelefone(numero.telefone || ''); // 👈 Carrega telefone
       setStatus(numero.status === "disponivel" ? "pago" : numero.status);
     }
   }, [numero]);
@@ -17,20 +19,20 @@ function NumeroModal({ numero, onClose, onSalvar }) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`, // ✅ Adiciona o token aqui
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ nome, status }),
+        body: JSON.stringify({ nome, status, telefone }), // 👈 Envia telefone também
       });
-  
+
       if (!resposta.ok) {
         throw new Error('Erro ao atualizar número');
       }
-  
+
       const dados = await resposta.json();
       console.log('✅ Número atualizado:', dados);
-  
-      onSalvar(); // Atualiza a lista na tela
-      onClose();  // Fecha o modal
+
+      onSalvar();
+      onClose();
     } catch (err) {
       console.error('❌ Erro ao salvar número:', err);
     }
@@ -49,6 +51,15 @@ function NumeroModal({ numero, onClose, onSalvar }) {
           value={nome}
           onChange={(e) => setNome(e.target.value)}
           className="w-full border rounded px-3 py-2 mb-4"
+        />
+
+        <label className="block mb-2 text-sm font-medium">Telefone </label>
+        <input
+          type="text"
+          value={telefone}
+          onChange={(e) => setTelefone(e.target.value)}
+          className="w-full border rounded px-3 py-2 mb-4"
+          placeholder="(99) 99999-9999"
         />
 
         <label className="block mb-2 text-sm font-medium">Status</label>
