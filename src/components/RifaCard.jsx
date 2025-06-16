@@ -2,10 +2,14 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 function formatarData(dataISO) {
-  if (!dataISO) return "Data não definida";
-  const [ano, mes, dia] = dataISO.split("-");
+  if (!dataISO || dataISO === "indefinido") return "Data não definida";
+  const partes = dataISO.split("-");
+  if (partes.length !== 3) return "Data não definida";
+
+  const [ano, mes, dia] = partes;
   return `${dia}/${mes}/${ano}`;
 }
+
 
 function RifaCard({ rifa, onDelete }) {
   const navigate = useNavigate();
