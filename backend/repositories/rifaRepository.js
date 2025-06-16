@@ -2,13 +2,14 @@ const pool = require("../database/connection");
 
 async function criarRifa(rifa) {
   const query = `
-INSERT INTO rifas (
-  titulo, descricao, valorNumero, dataSorteio,
-  chavePix, banco, mensagemFinal, totalNumeros,
-  imagemUrl, telefoneContato, descricaopremio, finalizada
-) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,FALSE)
- RETURNING *;
-`;
+    INSERT INTO rifas (
+      titulo, descricao, valorNumero, dataSorteio,
+      chavePix, banco, mensagemFinal, totalNumeros,
+      imagemUrl, telefoneContato, descricaoPremio,
+      finalizada, usuario_id
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,FALSE, $12)
+    RETURNING *;
+  `;
 
   const values = [
     rifa.titulo,
@@ -22,11 +23,37 @@ INSERT INTO rifas (
     rifa.imagemUrl || null,
     rifa.telefoneContato || null,
     rifa.descricaoPremio || null,
+    rifa.usuario_id, // 👈 Aqui o ID do usuário dono da rifa
   ];
 
   const result = await pool.query(query, values);
   return result.rows[0];
 }
+
+async function buscarRifasPorUsuarioId(usuarioId) {
+  const query = `
+    SELECT 
+      id,
+      titulo,
+      descricao,
+      valorNumero,
+      dataSorteio AS "dataSorteio",
+      chavePix,
+      banco,
+      mensagemFinal,
+      totalNumeros,
+      imagemUrl,
+      finalizada,
+      descricaoPremio
+    FROM rifas
+    WHERE usuario_id = $1
+    ORDER BY id DESC;
+  `;
+  const result = await pool.query(query, [usuarioId]);
+  return result.rows;
+}
+
+
 
 async function gerarNumeros(rifaId, totalNumeros) {
   const queries = [];
@@ -200,15 +227,20 @@ async function listarSorteiosDaRifa(rifaId) {
   return result.rows;
 }
 
+
+
 module.exports = {
   criarRifa,
   gerarNumeros,
   buscarRifaPorId,
   buscarNumerosPorRifaId,
   buscarTodasRifas,
+  buscarRifasPorUsuarioId,
   atualizarRifa,
   excluirRifa,
   finalizarRifa,
   sortearNumeroPago,
   listarSorteiosDaRifa,
 };
+
+

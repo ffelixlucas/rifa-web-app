@@ -30,6 +30,11 @@ async function obterTodasRifas() {
   return await rifaRepository.buscarTodasRifas();
 }
 
+async function obterRifasPorUsuarioId(usuarioId) {
+  return await rifaRepository.buscarRifasPorUsuarioId(usuarioId);
+}
+
+
 async function atualizarRifa(id, dados) {
   const rifaExistente = await rifaRepository.buscarRifaPorId(id);
   if (!rifaExistente) {
@@ -89,6 +94,7 @@ module.exports = {
   obterRifaPorId,
   obterNumerosPorRifaId,
   obterTodasRifas,
+  obterRifasPorUsuarioId,
   atualizarRifa,
   excluirRifa,
   finalizarRifa,
