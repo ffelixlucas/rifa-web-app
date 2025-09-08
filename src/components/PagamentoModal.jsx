@@ -81,7 +81,7 @@ function PagamentoModal({ numero, rifa, onClose }) {
           <div>
             <div className="flex justify-between items-center mb-1">
               <p className="text-sm text-gray-600">
-                Chave Pix ({labelTipo[rifa.tipochavepix] || "não informado"})
+                Chave Pix ({labelTipo[rifa.tipochavepix] || "não informado"}) HI5 GROWTH LTDA - C6 Bank
               </p>
 
               <button
