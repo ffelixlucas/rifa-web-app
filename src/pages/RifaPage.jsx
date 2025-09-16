@@ -118,11 +118,18 @@ function RifaPage() {
                       : "bg-green-100 text-green-800"
                   }`}
               >
-                {num.status === "pago" && (
+                {num.status === "pago" && num.nome && (
                   <div className="text-[10px] font-medium leading-none text-gray-800">
                     {num.nome}
                   </div>
                 )}
+
+                {num.status === "reservado" && num.nome && (
+                  <div className="text-[9px] font-medium leading-none text-yellow-700 italic">
+                    {num.nome} (reservado)
+                  </div>
+                )}
+
                 <div className="text-[12px] font-bold leading-tight">
                   {num.numero}
                 </div>

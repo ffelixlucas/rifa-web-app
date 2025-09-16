@@ -170,11 +170,13 @@ function AdminRifaPage() {
                       : "bg-green-100 text-green-800"
                   }`}
               >
-                {num.status === "pago" && (
-                  <div className="text-[10px] font-medium leading-none">
-                    {num.nome}
-                  </div>
-                )}
+                {(num.status === "pago" || num.status === "reservado") &&
+                  num.nome && (
+                    <div className="text-[10px] font-medium leading-none">
+                      {num.nome}
+                    </div>
+                  )}
+
                 <div className="text-[12px] font-bold leading-tight">
                   {num.numero}
                 </div>
