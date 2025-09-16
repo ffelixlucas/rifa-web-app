@@ -12,11 +12,8 @@ function RifaPage() {
   const [modalPremioAberto, setModalPremioAberto] = useState(false);
 
   async function carregarDados() {
-    console.log("⏰ Rodando carregarDados()");
     try {
-      const resRifa = await fetch(
-        `${import.meta.env.VITE_API_URL}/rifas/${id}`
-      );
+      const resRifa = await fetch(`${import.meta.env.VITE_API_URL}/rifas/${id}`);
       const dadosRifa = await resRifa.json();
       setRifa(dadosRifa);
 
@@ -35,13 +32,11 @@ function RifaPage() {
 
     function iniciarAtualizacao() {
       intervalo = setInterval(() => {
-        console.log("🔁 Atualizando rifa (aba visível)");
         carregarDados();
       }, 15000);
     }
 
     function pararAtualizacao() {
-      console.log("⏸️ Parando atualizações (aba invisível)");
       clearInterval(intervalo);
     }
 
@@ -65,40 +60,65 @@ function RifaPage() {
 
   if (!rifa) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <p className="text-gray-600 text-lg">Carregando rifa...</p>
+      <div className="flex min-h-screen items-center justify-center bg-gray-950">
+        <p className="text-gray-400 text-lg animate-pulse">
+          Carregando rifa...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-950 text-white">
       <div className="max-w-4xl mx-auto px-4 pb-12">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3">
+        {/* Cabeçalho */}
+        <div className="text-center mb-10">
+          <h1 className="text-3xl sm:text-4xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-500 drop-shadow-lg">
             {rifa.titulo}
           </h1>
 
-          <p className="text-sm sm:text-base text-gray-700 mb-1">
-            <span className="font-semibold">📅 Sorteio:</span>{" "}
-            {rifa.datasorteio && rifa.datasorteio !== "indefinido"
-              ? new Date(rifa.datasorteio).toLocaleDateString("pt-BR")
-              : "A definir"}
-          </p>
-
-          <p className="text-sm sm:text-base text-gray-700 mb-3">
-            <span className="font-semibold">Valor por número: R$</span>{" "}
-            <span className="text-green-600 font-bold">{rifa.valornumero}</span>
-          </p>
+          <div className="flex flex-wrap justify-center gap-4 mb-6">
+            <div className="bg-gray-800/70 backdrop-blur-sm rounded-lg px-4 py-2 shadow-md">
+              <span className="text-sm text-gray-400 block">📅 Sorteio</span>
+              <span className="text-base font-semibold text-indigo-300">
+                {rifa.datasorteio && rifa.datasorteio !== "indefinido"
+                  ? new Date(rifa.datasorteio).toLocaleDateString("pt-BR")
+                  : "A definir"}
+              </span>
+            </div>
+            <div className="bg-gray-800/70 backdrop-blur-sm rounded-lg px-4 py-2 shadow-md">
+              <span className="text-sm text-gray-400 block">💵 Valor</span>
+              <span className="text-base font-semibold text-green-400">
+                R$ {rifa.valornumero}
+              </span>
+            </div>
+          </div>
 
           <button
             onClick={() => setModalPremioAberto(true)}
-            className="inline-block mt-2 text-sm font-medium text-blue-600 hover:underline transition"
+            className="inline-block mt-2 px-5 py-2 text-sm font-semibold rounded-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white shadow-md hover:opacity-90 transition"
           >
             🎁 Ver prêmios
           </button>
         </div>
 
+        {/* Legenda */}
+        <div className="flex flex-wrap justify-center gap-4 text-xs sm:text-sm mb-6 text-gray-300">
+          <div className="flex items-center gap-1">
+            <span className="w-4 h-4 bg-gray-900 border border-gray-600 rounded"></span>
+            <span>Disponível</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="w-4 h-4 bg-yellow-400 rounded"></span>
+            <span>Reservado</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="w-4 h-4 bg-green-400 rounded"></span>
+            <span>Pago</span>
+          </div>
+        </div>
+
+        {/* Grade (mantida igual à sua) */}
         <div className="grid grid-cols-8 gap-2 sm:grid-cols-10 lg:grid-cols-12 lg:gap-4">
           {numeros.map((num) => (
             <div className="relative" key={num.id}>
@@ -112,20 +132,20 @@ function RifaPage() {
                 className={`cursor-pointer w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-md p-1 text-center shadow-sm transition-all duration-200 hover:shadow-md flex flex-col items-center justify-center
                   ${
                     num.status === "disponivel"
-                      ? "bg-white border border-gray-200 text-gray-800"
+                      ? "bg-gray-800 border border-gray-600 text-gray-200 hover:border-indigo-400"
                       : num.status === "reservado"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-green-100 text-green-800"
+                      ? "bg-yellow-500/80 text-white border border-yellow-400"
+                      : "bg-green-500/80 text-white border border-green-400"
                   }`}
               >
                 {num.status === "pago" && num.nome && (
-                  <div className="text-[10px] font-medium leading-none text-gray-800">
+                  <div className="text-[10px] font-medium leading-none text-gray-200">
                     {num.nome}
                   </div>
                 )}
 
                 {num.status === "reservado" && num.nome && (
-                  <div className="text-[9px] font-medium leading-none text-yellow-700 italic">
+                  <div className="text-[9px] font-medium leading-none text-yellow-100 italic">
                     {num.nome} (reservado)
                   </div>
                 )}
@@ -139,6 +159,16 @@ function RifaPage() {
         </div>
       </div>
 
+      {/* Mensagem final estilizada */}
+      {rifa.mensagemfinal && (
+        <div className="bg-gradient-to-r from-indigo-600/30 to-pink-600/30 border-t border-indigo-700 py-8 text-center">
+          <p className="max-w-2xl mx-auto text-gray-200 text-base sm:text-lg px-4 leading-relaxed">
+            ✨ {rifa.mensagemfinal}
+          </p>
+        </div>
+      )}
+
+      {/* Modais */}
       {modalAberto && (
         <PagamentoModal
           numero={numeroSelecionado}
