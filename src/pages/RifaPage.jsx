@@ -81,7 +81,7 @@ function RifaPage() {
 
           <p className="text-sm sm:text-base text-gray-700 mb-1">
             <span className="font-semibold">📅 Sorteio:</span>{" "}
-            {rifa.datasorteio
+            {rifa.datasorteio && rifa.datasorteio !== "indefinido"
               ? new Date(rifa.datasorteio).toLocaleDateString("pt-BR")
               : "A definir"}
           </p>
