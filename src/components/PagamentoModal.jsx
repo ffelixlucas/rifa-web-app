@@ -142,10 +142,11 @@ export default function PagamentoModal({ numero, rifa, onClose }) {
               </a>
 
               {/* Info box */}
-              <div className="flex items-start gap-2 text-xs italic text-blue-300 bg-blue-900/30 border border-blue-700 rounded-md p-2">
-                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-700/50">
-                  <FiInfo size={12} />
+              <div className="flex items-start gap-2 text-xs italic text-blue-300 bg-blue-900/30 border border-blue-800 rounded-md p-2">
+                <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-700">
+                  <FiInfo size={14} className="text-blue-100" />
                 </div>
+
                 <span>
                   Ao clicar em <strong>Escolher Número</strong>, ele será
                   reservado para você.
