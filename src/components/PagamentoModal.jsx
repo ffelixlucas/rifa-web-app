@@ -86,9 +86,19 @@ export default function PagamentoModal({ numero, rifa, onClose }) {
             {/* Pix */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <p className="text-sm text-gray-300">
-                  Chave Pix ({labelTipo[rifa.tipochavepix] || "não informado"})
-                </p>
+                <div className="flex flex-col">
+                  <p className="text-sm text-gray-300">
+                    Chave Pix ({labelTipo[rifa.tipochavepix] || "não informado"}
+                    )
+                  </p>
+                  {/* Banco e titular */}
+                  {rifa.banco && (
+                    <p className="text-xs text-gray-400 flex items-center gap-1">
+                      <span className="text-gray-500">🏦</span>
+                      {rifa.banco}
+                    </p>
+                  )}
+                </div>
                 <button
                   onClick={handleCopyPix}
                   disabled={!chavePix}
@@ -102,9 +112,12 @@ export default function PagamentoModal({ numero, rifa, onClose }) {
                   {copied ? "Copiado!" : "Copiar"}
                 </button>
               </div>
+
+              {/* Chave isolada */}
               <div className="bg-gray-800 rounded-md p-3 text-sm text-indigo-100 break-all">
                 {chavePix || "Chave não informada"}
               </div>
+
               {copied && (
                 <p className="text-xs text-green-400 mt-1 animate-fadeIn">
                   ✅ Chave Pix copiada com sucesso!
