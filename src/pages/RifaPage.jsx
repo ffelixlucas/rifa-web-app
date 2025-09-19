@@ -18,7 +18,9 @@ function RifaPage() {
   async function carregarDados() {
     try {
       setLoading(true);
-      const resRifa = await fetch(`${import.meta.env.VITE_API_URL}/rifas/${id}`);
+      const resRifa = await fetch(
+        `${import.meta.env.VITE_API_URL}/rifas/${id}`
+      );
       const dadosRifa = await resRifa.json();
       setRifa(dadosRifa);
 
@@ -133,62 +135,71 @@ function RifaPage() {
               </div>
             </div>
 
-            {/* Legenda */}
-            <div className="flex flex-wrap justify-center gap-4 text-xs sm:text-sm mb-6 text-gray-300">
-              <div className="flex items-center gap-1">
+            {/* Legenda + Contador */}
+            <div className="flex flex-wrap justify-center gap-6 text-xs sm:text-sm mb-6 text-gray-300">
+              <div className="flex items-center gap-2">
                 <span className="w-4 h-4 bg-gray-900 border border-gray-600 rounded"></span>
-                <span>Disponível</span>
+                <span>Disponíveis:</span>
+                <span className="font-semibold text-gray-200">
+                  {numeros.filter((n) => n.status === "disponivel").length}
+                </span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <span className="w-4 h-4 bg-yellow-400 rounded"></span>
-                <span>Reservado</span>
+                <span>Reservadas:</span>
+                <span className="font-semibold text-yellow-400">
+                  {numeros.filter((n) => n.status === "reservado").length}
+                </span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <span className="w-4 h-4 bg-green-400 rounded"></span>
-                <span>Pago</span>
+                <span>Vendidas:</span>
+                <span className="font-semibold text-green-400">
+                  {numeros.filter((n) => n.status === "pago").length}
+                </span>
               </div>
             </div>
 
+            {/* Grade de números */}
             <div className="grid grid-cols-8 gap-2 sm:grid-cols-10 lg:grid-cols-12 lg:gap-4 animate-fadeIn">
-  {numeros.map((num) => (
-    <div className="relative" key={`numero-${num.id}`}>
-      <div
-        onClick={() => {
-          if (num.status === "disponivel") {
-            setNumeroSelecionado(num);
-            setModalAberto(true);
-          } else {
-            setTooltip(
-              num.status === "reservado"
-                ? "Número já reservado"
-                : "Número já pago"
-            );
-            setTimeout(() => setTooltip(""), 2000);
-          }
-        }}
-        className={`cursor-pointer w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-md p-1 text-center shadow-sm 
-          transition-all duration-300 hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center
-          ${
-            num.status === "disponivel"
-              ? "bg-gray-800 border border-gray-600 text-gray-200 hover:border-indigo-400"
-              : num.status === "reservado"
-              ? "bg-yellow-500/80 text-white border border-yellow-400 animate-pulse"
-              : "bg-green-500/80 text-white border border-green-400 animate-glow"
-          }`}
-      >
-        {num.status !== "disponivel" && num.nome && (
-          <div className="text-[10px] font-medium leading-none text-white mb-0.5">
-            {num.nome}
-          </div>
-        )}
-        <div className="text-[12px] font-bold leading-tight font-mono tracking-wide">
-          {num.numero}
-        </div>
-      </div>
-    </div>
-  ))}
-</div>
-
+              {numeros.map((num) => (
+                <div className="relative" key={`numero-${num.id}`}>
+                  <div
+                    onClick={() => {
+                      if (num.status === "disponivel") {
+                        setNumeroSelecionado(num);
+                        setModalAberto(true);
+                      } else {
+                        setTooltip(
+                          num.status === "reservado"
+                            ? "Número já reservado"
+                            : "Número já pago"
+                        );
+                        setTimeout(() => setTooltip(""), 2000);
+                      }
+                    }}
+                    className={`cursor-pointer w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-md p-1 text-center shadow-sm 
+                      transition-all duration-300 hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center
+                      ${
+                        num.status === "disponivel"
+                          ? "bg-gray-800 border border-gray-600 text-gray-200 hover:border-indigo-400"
+                          : num.status === "reservado"
+                          ? "bg-yellow-500/80 text-white border border-yellow-400 animate-pulse"
+                          : "bg-green-500/80 text-white border border-green-400 animate-glow"
+                      }`}
+                  >
+                    {num.status !== "disponivel" && num.nome && (
+                      <div className="text-[10px] font-medium leading-none text-white mb-0.5">
+                        {num.nome}
+                      </div>
+                    )}
+                    <div className="text-[12px] font-bold leading-tight font-mono tracking-wide">
+                      {num.numero}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
 
             {/* Tooltip */}
             {tooltip && (
