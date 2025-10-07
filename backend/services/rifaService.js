@@ -96,6 +96,17 @@ async function listarSorteiosDaRifa(rifaId) {
   }
   return await rifaRepository.listarSorteiosDaRifa(rifaId);
 }
+async function listarCompradoresPorRifa(rifaId) {
+  const rifaExistente = await rifaRepository.buscarRifaPorId(rifaId);
+  if (!rifaExistente) {
+    const erro = new Error("Rifa não encontrada");
+    erro.status = 404;
+    throw erro;
+  }
+
+  return await rifaRepository.listarCompradoresPorRifa(rifaId);
+}
+
 
 
 
@@ -112,5 +123,6 @@ module.exports = {
   finalizarRifa,
   sortearNumeroPago,
   listarSorteiosDaRifa,
+  listarCompradoresPorRifa,
 
 };

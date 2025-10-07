@@ -256,6 +256,29 @@ async function listarSorteiosDaRifa(rifaId) {
   const result = await pool.query(query, [rifaId]);
   return result.rows;
 }
+async function listarCompradoresPorRifa(rifaId) {
+  try {
+    const query = `
+      SELECT 
+        id,
+        numero,
+        nome,
+        telefone,
+        status
+      FROM numeros
+      WHERE rifa_id = $1
+        AND nome IS NOT NULL
+      ORDER BY status DESC, nome ASC;
+    `;
+    const result = await pool.query(query, [rifaId]);
+    return result.rows;
+  } catch (error) {
+    console.error("Erro ao listar compradores da rifa:", error);
+    throw error;
+  }
+}
+
+
 
 module.exports = {
   criarRifa,
@@ -270,4 +293,5 @@ module.exports = {
   finalizarRifa,
   sortearNumeroPago,
   listarSorteiosDaRifa,
+  listarCompradoresPorRifa,
 };

@@ -11,6 +11,7 @@ router.get('/rifas/:id/numeros', rifaController.getNumerosPorRifaId);
 // 🔐 Rotas protegidas (Admin vê suas próprias rifas)
 router.get('/admin/rifas', verificarToken, rifaController.getMinhasRifas);
 router.get('/admin/rifas/:id', verificarToken, rifaController.getRifaPorIdPrivada);
+router.get('/admin/rifas/:id/compradores', verificarToken, rifaController.listarCompradoresDaRifa);
 
 // 🔧 Ações administrativas protegidas
 router.post('/admin/rifas', verificarToken, rifaController.criarRifa);

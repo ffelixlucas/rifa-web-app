@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import NumeroModal from "../components/NumeroModal.jsx";
+import CompradoresModal from "../components/CompradoresModal.jsx";
 
 function AdminRifaPage() {
   const { id } = useParams();
@@ -9,6 +10,8 @@ function AdminRifaPage() {
   const [filtroStatus, setFiltroStatus] = useState("todos");
   const [modalAberto, setModalAberto] = useState(false);
   const [numeroSelecionado, setNumeroSelecionado] = useState(null);
+  const [modalCompradoresAberto, setModalCompradoresAberto] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -127,6 +130,13 @@ function AdminRifaPage() {
               >
                 🔗 Compartilhar Link
               </button>
+              {/* 👥 Novo botão de compradores */}
+              <button
+                onClick={() => setModalCompradoresAberto(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium shadow transition"
+              >
+                👥 Ver compradores
+              </button>
             </div>
           </div>
         </div>
@@ -195,6 +205,13 @@ function AdminRifaPage() {
                 const dados = await res.json();
                 setNumeros(dados);
               }}
+            />
+          )}
+
+          {modalCompradoresAberto && (
+            <CompradoresModal
+              rifaId={id}
+              onClose={() => setModalCompradoresAberto(false)}
             />
           )}
         </div>

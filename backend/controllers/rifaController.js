@@ -169,6 +169,23 @@ async function listarSorteiosDaRifa(req, res) {
     res.status(error.status || 500).json({ erro: error.message });
   }
 }
+async function listarCompradoresDaRifa(req, res) {
+  const { id } = req.params;
+
+  try {
+    const compradores = await rifaService.listarCompradoresPorRifa(id);
+
+    if (!compradores || compradores.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    res.json(compradores);
+  } catch (error) {
+    console.error("❌ Erro ao listar compradores da rifa:", error);
+    res.status(error.status || 500).json({ erro: error.message });
+  }
+}
+
 
 module.exports = {
   criarRifa,
@@ -182,4 +199,5 @@ module.exports = {
   finalizarRifa,
   sortearNumeroDaRifa,
   listarSorteiosDaRifa,
+  listarCompradoresDaRifa,
 };
