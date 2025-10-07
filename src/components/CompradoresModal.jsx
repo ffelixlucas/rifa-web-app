@@ -72,76 +72,120 @@ export default function CompradoresModal({ rifaId, onClose }) {
 
         {/* Conteúdo */}
         <div className="overflow-y-auto flex-1 border rounded-lg divide-y divide-gray-200 shadow-inner">
-          {carregando ? (
-            <p className="text-center text-gray-500 py-6">Carregando...</p>
-          ) : compradoresFiltrados.length === 0 ? (
-            <p className="text-center text-gray-500 py-6">
-              Nenhum comprador encontrado.
-            </p>
-          ) : (
-            <table className="w-full text-sm text-gray-700">
-              <thead className="sticky top-0 bg-gray-100 text-gray-800">
-                <tr>
-                  <th className="px-3 py-2 text-left w-10">#</th>
-                  <th className="px-3 py-2 text-left">Nº</th>
-                  <th className="px-3 py-2 text-left">Nome</th>
-                  <th className="px-3 py-2 text-left">Status</th>
-                  <th className="px-3 py-2 text-left">Contato</th>
-                </tr>
-              </thead>
-              <tbody>
-                {compradoresFiltrados.map((c, i) => (
-                  <tr
-                    key={i}
-                    className={`border-b last:border-none ${
-                      c.status === "pago"
-                        ? "bg-green-50"
-                        : c.status === "reservado"
-                        ? "bg-yellow-50"
-                        : ""
-                    }`}
-                  >
-                    {/* 🆕 Coluna de contagem sequencial */}
-                    <td className="px-3 py-2 font-semibold text-gray-600">
-                      {i + 1}
-                    </td>
+  {carregando ? (
+    <p className="text-center text-gray-500 py-6">Carregando...</p>
+  ) : compradoresFiltrados.length === 0 ? (
+    <p className="text-center text-gray-500 py-6">
+      Nenhum comprador encontrado.
+    </p>
+  ) : (
+    <>
+      {/* 💬 Total e filtro */}
+      <p className="text-sm text-gray-600 px-3 py-2 text-center sm:text-left">
+        Total:{" "}
+        <span className="font-semibold text-gray-900">
+          {compradoresFiltrados.length}
+        </span>{" "}
+        {filtro === "todos"
+          ? "compradores"
+          : filtro === "pago"
+          ? "pagos"
+          : "reservados"}
+      </p>
 
-                    {/* Número da rifa */}
-                    <td className="px-3 py-2 font-semibold text-gray-800">
-                      {c.numero}
-                    </td>
+      {/* 🖥️ Tabela (desktop) */}
+      <div className="hidden sm:block overflow-x-auto">
+        <table className="w-full text-sm text-gray-700 min-w-[600px]">
+          <thead className="sticky top-0 bg-gray-100 text-gray-800">
+            <tr>
+              <th className="px-3 py-2 text-left w-10">#</th>
+              <th className="px-3 py-2 text-left">Nº</th>
+              <th className="px-3 py-2 text-left">Nome</th>
+              <th className="px-3 py-2 text-left">Status</th>
+              <th className="px-3 py-2 text-center">Contato</th>
+            </tr>
+          </thead>
+          <tbody>
+            {compradoresFiltrados.map((c, i) => (
+              <tr
+                key={i}
+                className={`border-b last:border-none ${
+                  c.status === "pago"
+                    ? "bg-green-50"
+                    : c.status === "reservado"
+                    ? "bg-yellow-50"
+                    : ""
+                }`}
+              >
+                <td className="px-3 py-2 font-semibold text-gray-600">{i + 1}</td>
+                <td className="px-3 py-2 font-semibold text-gray-800">
+                  {c.numero}
+                </td>
+                <td className="px-3 py-2">{c.nome}</td>
+                <td className="px-3 py-2 capitalize">{c.status}</td>
+                <td className="px-3 py-2 text-center">
+                  {c.telefone ? (
+                    <a
+                      href={`https://wa.me/55${c.telefone.replace(/\D/g, "")}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-green-600 hover:text-green-700 transition-transform hover:scale-110 inline-flex items-center justify-center"
+                      title={`Enviar mensagem para ${c.nome}`}
+                    >
+                      <FaWhatsapp size={20} />
+                    </a>
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-                    {/* Nome */}
-                    <td className="px-3 py-2">{c.nome}</td>
+      {/* 📱 Lista simplificada (mobile) */}
+      <div className="sm:hidden px-2 space-y-3">
+        {compradoresFiltrados.map((c, i) => (
+          <div
+            key={i}
+            className={`p-3 rounded-lg shadow-sm border flex justify-between items-center ${
+              c.status === "pago"
+                ? "bg-green-50"
+                : c.status === "reservado"
+                ? "bg-yellow-50"
+                : "bg-white"
+            }`}
+          >
+            <div>
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold text-gray-900">
+                  #{i + 1}
+                </span>{" "}
+                • Nº {c.numero}
+              </p>
+              <p className="font-medium text-gray-800">{c.nome || "—"}</p>
+              <p className="text-xs text-gray-500 capitalize">{c.status}</p>
+            </div>
 
-                    {/* Status */}
-                    <td className="px-3 py-2 capitalize">{c.status}</td>
+            {c.telefone && (
+              <a
+                href={`https://wa.me/55${c.telefone.replace(/\D/g, "")}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-green-600 hover:text-green-700"
+                title={`WhatsApp de ${c.nome}`}
+              >
+                <FaWhatsapp size={22} />
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+    </>
+  )}
+</div>
 
-                    {/* Contato */}
-                    <td className="px-3 py-2 text-center">
-                      {c.telefone ? (
-                        <a
-                          href={`https://wa.me/55${c.telefone.replace(
-                            /\D/g,
-                            ""
-                          )}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-green-600 hover:text-green-700 transition-transform hover:scale-110 inline-flex items-center justify-center"
-                          title={`Enviar mensagem para ${c.nome}`}
-                        >
-                          <FaWhatsapp size={20} />
-                        </a>
-                      ) : (
-                        <span className="text-gray-400">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
       </div>
     </div>
   );
