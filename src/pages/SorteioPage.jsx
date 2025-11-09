@@ -24,8 +24,6 @@ function SorteioPage() {
   const [ordem, setOrdem] = useState("asc");
   const [loading, setLoading] = useState(true);
 
-  
-
   useEffect(() => {
     async function carregarDados() {
       try {
@@ -372,7 +370,7 @@ function SorteioPage() {
                       <span>
                         Nº {ganhador.numero} — {ganhador.nome}
                       </span>
-                                          </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -394,14 +392,23 @@ function SorteioPage() {
                         length: quantidadeSorteios || sorteios.length,
                       }).map((_, index) => {
                         const s = sorteios[index];
-
                         function enviarMensagemWhatsApp() {
                           if (!s.telefone) {
-                            alert("Este participante não possui número de WhatsApp cadastrado.");
+                            alert(
+                              "Este participante não possui número de WhatsApp cadastrado."
+                            );
                             return;
                           }
-                        
-                          const numeroLimpo = s.telefone.replace(/\D/g, "");
+
+                          // 🔹 Remove tudo que não é número (espaço, +, traço, parênteses)
+                          let numeroLimpo = s.telefone.replace(/\D/g, "");
+
+                          // 🔹 Garante que o número começa com o DDI 55 (Brasil)
+                          if (!numeroLimpo.startsWith("55")) {
+                            numeroLimpo = "55" + numeroLimpo;
+                          }
+
+                          // 🔹 Monta o texto da mensagem com a colocação
                           const colocacaoTexto =
                             s.colocacao === 1
                               ? "🥇 1º lugar"
@@ -410,16 +417,17 @@ function SorteioPage() {
                               : s.colocacao === 3
                               ? "🥉 3º lugar"
                               : `${s.colocacao}º lugar`;
-                        
+
                           const mensagem = `Parabéns ${s.nome}! 🎉 Você ficou em ${colocacaoTexto} na rifa "${rifa.titulo}". Número da sorte: ${s.numero}.`;
-                          const link = `https://wa.me/55${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
-                        
+
+                          // 🔹 Cria o link do WhatsApp com o número limpo
+                          const link = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(
+                            mensagem
+                          )}`;
+
                           console.log("🔗 Abrindo WhatsApp:", link);
                           window.open(link, "_blank");
                         }
-                        
-                        
-                        
 
                         return (
                           <div
