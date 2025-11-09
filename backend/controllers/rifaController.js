@@ -133,29 +133,36 @@ async function finalizarRifa(req, res) {
 async function sortearNumeroDaRifa(req, res) {
   const { id } = req.params;
   const usuarioId = req.usuario.id;
+  const ordem = req.query.ordem || "asc";
+  const total = parseInt(req.query.total || "1", 10);
+ 
+
 
   try {
-    // 1. Buscar dados da rifa
     const rifa = await rifaService.obterRifaPorIdEUsuario(id, usuarioId);
-
+  
     if (!rifa) {
       return res.status(404).json({ erro: "Rifa não encontrada" });
     }
-
-    // 2. Verificar se a rifa pertence ao usuário logado
+  
     if (rifa.usuario_id !== usuarioId) {
-      return res
-        .status(403)
-        .json({ erro: "Acesso negado. Esta rifa não pertence a você." });
+      return res.status(403).json({ erro: "Acesso negado. Esta rifa não pertence a você." });
     }
-
-    // 3. Executar sorteio
-    const resultado = await rifaService.sortearNumeroPago(id);
+  
+    const resultado = await rifaService.sortearNumeroPago(id, ordem, total);
+  
+    console.log("📣 Resultado enviado ao front:", {
+      nome: resultado.nome,
+      numero: resultado.numero,
+      telefone: resultado.telefone,
+    });
+  
     res.json(resultado);
   } catch (error) {
     console.error("❌ Erro ao sortear número:", error);
     res.status(error.status || 500).json({ erro: error.message });
   }
+  
 }
 
 async function listarSorteiosDaRifa(req, res) {

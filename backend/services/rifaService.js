@@ -75,18 +75,16 @@ async function finalizarRifa(id) {
   }
   return await rifaRepository.finalizarRifa(id);
 }
-async function sortearNumeroPago(rifaId) {
+async function sortearNumeroPago(rifaId, ordem = "asc", total = 1) {
   const rifaExistente = await rifaRepository.buscarRifaPorId(rifaId);
+  if (!rifaExistente) throw new Error("Rifa não encontrada");
 
-  if (!rifaExistente) {
-    const erro = new Error('Rifa não encontrada');
-    erro.status = 404;
-    throw erro;
-  }
-
-  const resultado = await rifaRepository.sortearNumeroPago(rifaId);
-  return resultado; // { numero, nome, colocacao }
+  const resultado = await rifaRepository.sortearNumeroPago(rifaId, ordem, total);
+  console.log("📱 Resultado do sorteio:", resultado);
+  return resultado;
 }
+
+
 async function listarSorteiosDaRifa(rifaId) {
   const rifaExistente = await rifaRepository.buscarRifaPorId(rifaId);
   if (!rifaExistente) {

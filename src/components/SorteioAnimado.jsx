@@ -2,7 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import Confetti from "react-confetti";
 import { FaWhatsapp } from "react-icons/fa";
 
-export default function SorteioAnimado({ rifaId, onFinalizar }) {
+export default function SorteioAnimado({
+  rifaId,
+  ordem,
+  quantidadeSorteios,
+  onFinalizar,
+}) {
   const [contador, setContador] = useState(0);
   const [numeroFinal, setNumeroFinal] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -26,7 +31,9 @@ export default function SorteioAnimado({ rifaId, onFinalizar }) {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/admin/rifas/${rifaId}/sorteio`,
+          `${
+            import.meta.env.VITE_API_URL
+          }/admin/rifas/${rifaId}/sorteio?ordem=${ordem}&total=${quantidadeSorteios}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -84,12 +91,6 @@ export default function SorteioAnimado({ rifaId, onFinalizar }) {
     };
   }, [rifaId, onFinalizar]);
 
-  function gerarLinkWhatsapp(telefone, nome) {
-    if (!telefone) return "#";
-    const numeroLimpo = telefone.replace(/\D/g, "");
-    const mensagem = `Parabéns ${nome}! 🎉 Você foi sorteado na rifa! Entre em contato para combinarmos a entrega do prêmio.`;
-    return `https://wa.me/55${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
-  }
 
   return (
     <div className="mt-10 text-center">
@@ -104,19 +105,8 @@ export default function SorteioAnimado({ rifaId, onFinalizar }) {
       </div>
 
       {numeroFinal && (
-        <div className="mt-6 flex items-center justify-center gap-3 text-2xl font-semibold text-green-700">
-          🎉 Parabéns {numeroFinal.nome}!
-          {numeroFinal.telefone && (
-            <a
-              href={gerarLinkWhatsapp(numeroFinal.telefone, numeroFinal.nome)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-green-600 hover:text-green-800"
-              title="Chamar no WhatsApp"
-            >
-              <FaWhatsapp size={32} />
-            </a>
-          )}
+        <div className="mt-6 text-2xl font-semibold text-green-400">
+          🎉 Número sorteado: {numeroFinal.numero}
         </div>
       )}
     </div>

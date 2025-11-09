@@ -192,53 +192,69 @@ async function finalizarRifa(id) {
   const result = await pool.query(query, [id]);
   return result.rows[0];
 }
+async function sortearNumeroPago(rifaId, ordem = "asc", total = 1) {
+  const totalSorteiosPlanejado = parseInt(total, 10) || 1;
 
-async function sortearNumeroPago(rifaId) {
-  // 1. Buscar todos os números com status = 'pago' e que ainda NÃO foram sorteados
-  const query = `
-    SELECT n.*
-    FROM numeros n
-    WHERE n.rifa_id = $1
-      AND n.status = 'pago'
-      AND NOT EXISTS (
-        SELECT 1 FROM sorteios s
-        WHERE s.numero_id = n.id
-        AND s.rifa_id = $1
-      );
-  `;
+  // 1️⃣ Buscar números pagos ainda não sorteados
+  const result = await pool.query(
+    `SELECT n.*
+     FROM numeros n
+     WHERE n.rifa_id = $1
+       AND n.status = 'pago'
+       AND NOT EXISTS (
+         SELECT 1 FROM sorteios s 
+         WHERE s.numero_id = n.id 
+         AND s.rifa_id = $1
+       );`,
+    [rifaId]
+  );
 
-  const result = await pool.query(query, [rifaId]);
   const numerosValidos = result.rows;
-
   if (numerosValidos.length === 0) {
     throw new Error("Nenhum número restante para sortear.");
   }
 
-  // 2. Escolher um número aleatório
-  const indiceSorteado = Math.floor(Math.random() * numerosValidos.length);
-  const numeroSorteado = numerosValidos[indiceSorteado];
-
-  // 3. Verificar quantos sorteios já ocorreram para essa rifa
+  // 2️⃣ Contar sorteios existentes
   const resContagem = await pool.query(
     `SELECT COUNT(*) FROM sorteios WHERE rifa_id = $1`,
     [rifaId]
   );
-  const colocacao = parseInt(resContagem.rows[0].count) + 1;
+  const totalSorteados = parseInt(resContagem.rows[0].count, 10);
 
-  // 4. Registrar o sorteio
+  // 🚫 Bloquear sorteios extras
+  if (totalSorteados >= totalSorteiosPlanejado) {
+    throw new Error(
+      `Limite de ${totalSorteiosPlanejado} sorteios atingido para esta rifa.`
+    );
+  }
+
+  // 3️⃣ Escolher aleatoriamente
+  const indice = Math.floor(Math.random() * numerosValidos.length);
+  const numeroSorteado = numerosValidos[indice];
+
+  // 4️⃣ Definir colocação conforme ordem
+  const colocacao =
+    ordem === "desc"
+      ? totalSorteiosPlanejado - totalSorteados
+      : totalSorteados + 1;
+
+  // 5️⃣ Salvar sorteio no banco
   await pool.query(
-    `INSERT INTO sorteios (rifa_id, numero_id, colocacao) VALUES ($1, $2, $3)`,
+    `INSERT INTO sorteios (rifa_id, numero_id, colocacao)
+     VALUES ($1, $2, $3)`,
     [rifaId, numeroSorteado.id, colocacao]
   );
 
-  // 5. Retornar os dados
+  // 6️⃣ Retornar dados ao front
   return {
     numero: numeroSorteado.numero,
     nome: numeroSorteado.nome,
-    telefone: numeroSorteado.telefone,
-    colocacao: colocacao,
+    telefone: numeroSorteado.telefone || null,
+    colocacao,
   };
 }
+
+
 
 async function listarSorteiosDaRifa(rifaId) {
   const query = `
@@ -277,8 +293,6 @@ async function listarCompradoresPorRifa(rifaId) {
     throw error;
   }
 }
-
-
 
 module.exports = {
   criarRifa,
