@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ErrorBoundary from "./ErrorBoundary";
+import { authService } from "../services/authService";
+import { buscarNumerosDaRifa, excluirRifa } from "../services/rifaApi";
 
 function formatarData(dataISO) {
   try {
@@ -20,20 +22,19 @@ export default function RifaCard({ rifa, onDelete }) {
   const [total, setTotal] = useState(0);
   const [pagos, setPagos] = useState(0);
   const [disponiveis, setDisponiveis] = useState(0);
+  const [erro, setErro] = useState("");
+  const [excluindo, setExcluindo] = useState(false);
 
   useEffect(() => {
     async function carregarNumeros() {
       if (document.visibilityState !== "visible") return;
       try {
-        const resposta = await fetch(
-          `${import.meta.env.VITE_API_URL}/rifas/${rifa.id}/numeros`
-        );
-        const numeros = await resposta.json();
+        const numeros = await buscarNumerosDaRifa(rifa.id);
         setTotal(numeros.length);
         setPagos(numeros.filter((n) => n.status === "pago").length);
         setDisponiveis(numeros.filter((n) => n.status === "disponivel").length);
       } catch (error) {
-        console.error("Erro ao buscar números da rifa:", error);
+        setErro(error.message || "Erro ao buscar números.");
       }
     }
     carregarNumeros();
@@ -44,32 +45,24 @@ export default function RifaCard({ rifa, onDelete }) {
 
   const handleDelete = async (e) => {
     e.stopPropagation();
+    if (!onDelete) return;
+
     const confirmar = window.confirm(
       `Deseja realmente excluir a rifa "${rifa.titulo}"?`
     );
     if (!confirmar) return;
 
     try {
-      const resposta = await fetch(
-        `${import.meta.env.VITE_API_URL}/admin/rifas/${rifa.id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (resposta.status === 204) {
-        alert("Rifa excluída com sucesso!");
-        onDelete?.(rifa.id);
-      } else {
-        const erro = await resposta.json();
-        alert(`Erro ao excluir: ${erro.erro}`);
-      }
+      setExcluindo(true);
+      await excluirRifa(rifa.id);
+      onDelete?.(rifa.id);
     } catch (error) {
-      console.error("Erro ao excluir rifa:", error);
-      alert("Erro ao excluir rifa.");
+      if (error.status === 401) {
+        authService.removeToken();
+      }
+      setErro(error.message || "Erro ao excluir rifa.");
+    } finally {
+      setExcluindo(false);
     }
   };
 
@@ -103,13 +96,17 @@ export default function RifaCard({ rifa, onDelete }) {
           Restantes: <strong>{disponiveis}</strong>
         </span>
       </div>
+      {erro && <p className="mt-2 text-xs text-red-600">{erro}</p>}
 
-      <button
-        onClick={handleDelete}
-        className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 text-xs rounded hover:bg-red-700"
-      >
-        Excluir
-      </button>
+      {onDelete && (
+        <button
+          onClick={handleDelete}
+          disabled={excluindo}
+          className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 text-xs rounded hover:bg-red-700 disabled:opacity-70"
+        >
+          {excluindo ? "Excluindo..." : "Excluir"}
+        </button>
+      )}
     </div>
     </ErrorBoundary>
   );

@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { authService } from '../services/authService';
 
 function HeaderAdmin() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    authService.removeToken();
     navigate('/admin/login');
   };
 

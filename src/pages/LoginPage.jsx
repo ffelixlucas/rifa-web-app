@@ -15,17 +15,21 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErro("");
+    setLoading(true);
 
     try {
       const token = await login(email, senha);
       authService.setToken(token);
       navigate("/admin");
     } catch (err) {
-      setErro("Credenciais inválidas. Tente novamente.");
+      setErro(err.message || "Credenciais inválidas. Tente novamente.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,9 +60,10 @@ function LoginPage() {
 
           <button
             type="submit"
+            disabled={loading}
             className="bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
           >
-            Entrar
+            {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>
       </div>

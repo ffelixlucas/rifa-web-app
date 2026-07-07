@@ -1,28 +1,21 @@
 import { useEffect, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
+import { listarCompradoresDaRifa } from "../services/rifaApi";
 
 export default function CompradoresModal({ rifaId, onClose }) {
   const [compradores, setCompradores] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [filtro, setFiltro] = useState("todos"); // novo filtro
+  const [erro, setErro] = useState("");
 
   useEffect(() => {
     async function carregarCompradores() {
       try {
-        const resp = await fetch(
-          `${import.meta.env.VITE_API_URL}/admin/rifas/${rifaId}/compradores`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        if (!resp.ok) throw new Error("Erro ao buscar compradores");
-        const dados = await resp.json();
+        setErro("");
+        const dados = await listarCompradoresDaRifa(rifaId);
         setCompradores(dados);
       } catch (err) {
-        console.error("Erro ao carregar compradores:", err);
+        setErro(err.message || "Erro ao carregar compradores.");
       } finally {
         setCarregando(false);
       }
@@ -74,6 +67,8 @@ export default function CompradoresModal({ rifaId, onClose }) {
         <div className="overflow-y-auto flex-1 border rounded-lg divide-y divide-gray-200 shadow-inner">
   {carregando ? (
     <p className="text-center text-gray-500 py-6">Carregando...</p>
+  ) : erro ? (
+    <p className="text-center text-red-600 py-6">{erro}</p>
   ) : compradoresFiltrados.length === 0 ? (
     <p className="text-center text-gray-500 py-6">
       Nenhum comprador encontrado.

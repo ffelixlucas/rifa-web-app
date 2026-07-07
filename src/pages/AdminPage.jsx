@@ -2,10 +2,15 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HeaderAdmin from "../components/HeaderAdmin.jsx";
 import RifaCard from "../components/RifaCard";
+import { listarRifasAdmin } from "../services/rifaApi";
+import { authService } from "../services/authService";
 
 function AdminPage() {
   const [rifas, setRifas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState("");
   const navigate = useNavigate();
+
   const handleDelete = (idRifaExcluida) => {
     setRifas((rifasAtuais) => rifasAtuais.filter((r) => r.id !== idRifaExcluida));
   };
@@ -14,25 +19,19 @@ function AdminPage() {
   useEffect(() => {
     async function carregarRifas() {
       try {
-        const resposta = await fetch(
-          `${import.meta.env.VITE_API_URL}/admin/rifas`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        if (resposta.status === 401) {
+        setLoading(true);
+        setErro("");
+        const dados = await listarRifasAdmin();
+        setRifas(dados);
+      } catch (err) {
+        if (err.status === 401) {
+          authService.removeToken();
           navigate("/admin/login");
           return;
         }
-
-        const dados = await resposta.json();
-        console.log("🔍 Rifas do usuário logado:", dados);
-        setRifas(dados);
-      } catch (err) {
-        console.error("Erro ao carregar rifas:", err);
+        setErro(err.message || "Erro ao carregar rifas.");
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -48,7 +47,11 @@ function AdminPage() {
           Minhas Rifas
         </h1>
 
-        {rifas.length === 0 ? (
+        {loading ? (
+          <p className="text-center text-gray-500">Carregando suas rifas...</p>
+        ) : erro ? (
+          <p className="text-center text-red-600">{erro}</p>
+        ) : rifas.length === 0 ? (
           <p className="text-center text-gray-500">Nenhuma rifa encontrada.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

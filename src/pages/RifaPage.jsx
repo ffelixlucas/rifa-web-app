@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import PagamentoModal from "../components/PagamentoModal.jsx";
 import PremioModal from "../components/PremioModal.jsx";
 import ErrorBoundary from "../components/ErrorBoundary.jsx";
+import { buscarNumerosDaRifa, buscarRifaPublica } from "../services/rifaApi";
 
 function RifaPage() {
   const { id } = useParams();
@@ -11,27 +12,36 @@ function RifaPage() {
   const [numeros, setNumeros] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
-  const [numeroSelecionado, setNumeroSelecionado] = useState(null);
+  const [numerosSelecionadosIds, setNumerosSelecionadosIds] = useState([]);
+  const [dadosComprador, setDadosComprador] = useState({
+    nomeCompleto: "",
+    telefone: "",
+  });
   const [modalPremioAberto, setModalPremioAberto] = useState(false);
   const [tooltip, setTooltip] = useState("");
+  const [erro, setErro] = useState("");
+  const [feedbackSucesso, setFeedbackSucesso] = useState("");
 
   async function carregarDados() {
     try {
       setLoading(true);
-      const resRifa = await fetch(
-        `${import.meta.env.VITE_API_URL}/rifas/${id}`
-      );
-      const dadosRifa = await resRifa.json();
+      setErro("");
+      const [dadosRifa, dadosNumeros] = await Promise.all([
+        buscarRifaPublica(id),
+        buscarNumerosDaRifa(id),
+      ]);
       setRifa(dadosRifa);
-
-      const resNumeros = await fetch(
-        `${import.meta.env.VITE_API_URL}/rifas/${id}/numeros`
-      );
-      const dadosNumeros = await resNumeros.json();
       setNumeros(dadosNumeros);
+      setNumerosSelecionadosIds((selecionadosAtuais) =>
+        selecionadosAtuais.filter((numeroId) =>
+          dadosNumeros.some(
+            (n) => n.id === numeroId && n.status === "disponivel"
+          )
+        )
+      );
       document.title = dadosRifa.titulo || "Rifa";
     } catch (error) {
-      console.error("Erro ao carregar dados da rifa:", error);
+      setErro(error.message || "Erro ao carregar dados da rifa.");
     } finally {
       setLoading(false);
     }
@@ -64,6 +74,38 @@ function RifaPage() {
       document.removeEventListener("visibilitychange", verificarVisibilidade);
     };
   }, [id]);
+
+  useEffect(() => {
+    if (modalAberto && numerosSelecionadosIds.length === 0) {
+      setModalAberto(false);
+    }
+  }, [modalAberto, numerosSelecionadosIds.length]);
+
+  const numerosSelecionados = numeros
+    .filter(
+      (n) => numerosSelecionadosIds.includes(n.id) && n.status === "disponivel"
+    )
+    .sort((a, b) => a.numero - b.numero);
+
+  const valorUnitario = Number.parseFloat(
+    String(rifa?.valornumero ?? "0").replace(/[^\d,]/g, "").replace(",", ".")
+  );
+  const valorTotalSelecionado =
+    (Number.isNaN(valorUnitario) ? 0 : valorUnitario) * numerosSelecionados.length;
+
+  function alternarSelecaoNumero(num) {
+    if (num.status !== "disponivel") {
+      setTooltip(num.status === "reservado" ? "Número já reservado" : "Número já pago");
+      setTimeout(() => setTooltip(""), 2000);
+      return;
+    }
+
+    setNumerosSelecionadosIds((atual) =>
+      atual.includes(num.id)
+        ? atual.filter((numeroId) => numeroId !== num.id)
+        : [...atual, num.id]
+    );
+  }
 
   return (
     <ErrorBoundary label="RifaPage">
@@ -116,7 +158,12 @@ function RifaPage() {
 
         {/* Conteúdo */}
         {rifa && (
-          <div className="max-w-4xl mx-auto px-4 pb-12">
+          <div className="max-w-4xl mx-auto px-4 pb-32">
+            {erro && (
+              <p className="my-4 rounded border border-red-300 bg-red-900/30 px-3 py-2 text-sm text-red-200">
+                {erro}
+              </p>
+            )}
             {/* Infos */}
             <div className="flex flex-wrap justify-center gap-4 my-6">
               <div className="bg-gray-800/70 backdrop-blur-sm rounded-lg px-4 py-2 shadow-md">
@@ -159,29 +206,24 @@ function RifaPage() {
                 </span>
               </div>
             </div>
-
             {/* Grade de números */}
             <div className="grid grid-cols-8 gap-2 sm:grid-cols-10 lg:grid-cols-12 lg:gap-4 animate-fadeIn">
               {numeros.map((num) => (
                 <div className="relative" key={`numero-${num.id}`}>
+                  {numerosSelecionadosIds.includes(num.id) && (
+                    <span className="absolute -top-1 -right-1 z-10 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-500 text-[10px] font-bold text-white">
+                      ✓
+                    </span>
+                  )}
                   <div
-                    onClick={() => {
-                      if (num.status === "disponivel") {
-                        setNumeroSelecionado(num);
-                        setModalAberto(true);
-                      } else {
-                        setTooltip(
-                          num.status === "reservado"
-                            ? "Número já reservado"
-                            : "Número já pago"
-                        );
-                        setTimeout(() => setTooltip(""), 2000);
-                      }
-                    }}
+                    onClick={() => alternarSelecaoNumero(num)}
                     className={`cursor-pointer w-10 h-10 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-md p-1 text-center shadow-sm 
                       transition-all duration-300 hover:scale-105 hover:shadow-lg flex flex-col items-center justify-center
                       ${
-                        num.status === "disponivel"
+                        num.status === "disponivel" &&
+                        numerosSelecionadosIds.includes(num.id)
+                          ? "bg-indigo-600 border border-indigo-300 text-white"
+                          : num.status === "disponivel"
                           ? "bg-gray-800 border border-gray-600 text-gray-200 hover:border-indigo-400"
                           : num.status === "reservado"
                           ? "bg-yellow-500/80 text-white border border-yellow-400 animate-pulse"
@@ -203,10 +245,26 @@ function RifaPage() {
 
             {/* Tooltip */}
             {tooltip && (
-              <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-black/80 text-white px-3 py-1 rounded text-sm shadow-lg">
+              <div
+              className={`fixed left-1/2 -translate-x-1/2 bg-black/80 text-white px-3 py-1 rounded text-sm shadow-lg ${
+                  numerosSelecionados.length > 0 ? "bottom-24" : "bottom-4"
+                }`}
+              >
                 {tooltip}
               </div>
             )}
+            {feedbackSucesso && (
+              <div className="fixed left-1/2 top-20 z-40 -translate-x-1/2 rounded-md border border-green-300/50 bg-green-500/15 px-4 py-2 text-sm font-medium text-green-100 shadow-lg backdrop-blur">
+                {feedbackSucesso}
+              </div>
+            )}
+          </div>
+        )}
+        {!loading && !rifa && (
+          <div className="mx-auto max-w-xl px-4 py-10 text-center">
+            <p className="rounded border border-red-300 bg-red-900/30 px-4 py-3 text-red-200">
+              {erro || "Rifa não encontrada."}
+            </p>
           </div>
         )}
 
@@ -224,12 +282,63 @@ function RifaPage() {
           🔒 Pagamentos seguros via Pix · ✨ Sorteio com transparência garantida
         </div>
 
+        {numerosSelecionados.length > 0 && (
+          <div className="fixed bottom-0 inset-x-0 z-30 border-t border-indigo-400/40 bg-gray-950/95 backdrop-blur-md">
+            <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-3 px-4 py-3">
+              <div className="min-w-0">
+                <p className="text-xs text-indigo-200">
+                  {numerosSelecionados.length} número
+                  {numerosSelecionados.length > 1 ? "s selecionados" : " selecionado"}
+                </p>
+                <p className="truncate text-xs text-gray-300">
+                  {numerosSelecionados.map((n) => n.numero).join(", ")}
+                </p>
+                <p className="text-sm font-semibold text-green-300">
+                  Total: R$ {valorTotalSelecionado.toFixed(2).replace(".", ",")}
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <button
+                  onClick={() => setNumerosSelecionadosIds([])}
+                  className="rounded-md border border-gray-600 px-3 py-2 text-xs text-gray-200 hover:bg-gray-800"
+                >
+                  Limpar
+                </button>
+                <button
+                  onClick={() => setModalAberto(true)}
+                  className="rounded-md bg-gradient-to-r from-indigo-500 to-pink-500 px-3 py-2 text-xs font-semibold text-white hover:opacity-90"
+                >
+                  Reservar agora
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Modais */}
         {modalAberto && (
           <PagamentoModal
-            numero={numeroSelecionado}
+            rifaId={id}
+            numerosSelecionados={numerosSelecionados}
+            dadosComprador={dadosComprador}
+            onDadosCompradorChange={setDadosComprador}
             rifa={rifa}
             onClose={() => setModalAberto(false)}
+            onRemoverNumero={(numeroId) =>
+              setNumerosSelecionadosIds((atual) =>
+                atual.filter((idSelecionado) => idSelecionado !== numeroId)
+              )
+            }
+            onConfirm={async () => {
+              setModalAberto(false);
+              setNumerosSelecionadosIds([]);
+              await carregarDados();
+              setFeedbackSucesso(
+                "Reserva enviada com sucesso. Aguarde confirmação do administrador."
+              );
+              setTimeout(() => setFeedbackSucesso(""), 3000);
+            }}
           />
         )}
         {modalPremioAberto && (

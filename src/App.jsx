@@ -11,6 +11,7 @@ import AdminRifaPage from "./pages/AdminRifaPage.jsx";
 import RifaPage from "./pages/RifaPage.jsx";
 import SorteioPage from "./pages/SorteioPage.jsx";
 import CriarRifaPage from "./pages/CriarRifaPage.jsx";
+import HomePage from "./pages/HomePage.jsx";
 
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
@@ -18,8 +19,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/admin/login" />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/admin/login" element={<LoginPage />} />
+        <Route path="/login" element={<Navigate to="/admin/login" replace />} />
+        <Route path="/home" element={<Navigate to="/" replace />} />
 
         <Route
           path="/admin"
@@ -55,6 +58,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

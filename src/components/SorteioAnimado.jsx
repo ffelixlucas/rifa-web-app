@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Confetti from "react-confetti";
-import { FaWhatsapp } from "react-icons/fa";
+import { sortearRifa } from "../services/rifaApi";
 
 export default function SorteioAnimado({
   rifaId,
@@ -13,6 +13,7 @@ export default function SorteioAnimado({
   const [showConfetti, setShowConfetti] = useState(false);
   const [largura, setLargura] = useState(window.innerWidth);
   const [altura, setAltura] = useState(window.innerHeight);
+  const [erro, setErro] = useState("");
 
   const intervalRef = useRef(null);
   const timeoutRef = useRef(null);
@@ -29,24 +30,19 @@ export default function SorteioAnimado({
 
     async function sortearDoBackend() {
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(
-          `${
-            import.meta.env.VITE_API_URL
-          }/admin/rifas/${rifaId}/sorteio?ordem=${ordem}&total=${quantidadeSorteios}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const resultado = await sortearRifa(rifaId, {
+          ordem,
+          total: String(quantidadeSorteios),
+        });
 
-        const resultado = await res.json();
-
-        if (res.ok && resultado && typeof resultado.numero === "number") {
+        if (resultado && typeof resultado.numero === "number") {
           animarNumero(resultado);
         } else {
-          alert(resultado?.message || "Erro ao sortear número");
+          setErro("Resposta inválida ao sortear número.");
           onFinalizar?.(null);
         }
       } catch (err) {
-        alert("Erro de conexão com o servidor.");
+        setErro(err.message || "Erro de conexão com o servidor.");
         onFinalizar?.(null);
       }
     }
@@ -109,6 +105,7 @@ export default function SorteioAnimado({
           🎉 Número sorteado: {numeroFinal.numero}
         </div>
       )}
+      {erro && <p className="mt-3 text-sm text-red-400">{erro}</p>}
     </div>
   );
 }

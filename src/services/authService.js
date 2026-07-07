@@ -1,38 +1,28 @@
-const TOKEN_KEY = "token";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { loginAdmin } from "./rifaApi";
+import { tokenStorage } from "./tokenStorage";
 
 export async function login(email, senha) {
-  const response = await fetch(`${API_URL}/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, senha }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Erro no login");
+  const data = await loginAdmin(email, senha);
+  if (!data?.token) {
+    throw new Error("Token de autenticação não retornado.");
   }
-
-  const data = await response.json();
   return data.token;
 }
 
 export const authService = {
   setToken(token) {
-    localStorage.setItem(TOKEN_KEY, token);
+    tokenStorage.set(token);
   },
 
   getToken() {
-    return localStorage.getItem(TOKEN_KEY);
+    return tokenStorage.get();
   },
 
   removeToken() {
-    localStorage.removeItem(TOKEN_KEY);
+    tokenStorage.remove();
   },
 
   isAuthenticated() {
-    return !!localStorage.getItem(TOKEN_KEY);
+    return tokenStorage.has();
   },
 };

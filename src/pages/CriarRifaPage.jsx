@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HeaderAdmin from "../components/HeaderAdmin.jsx";
+import { criarRifa } from "../services/rifaApi";
+import { authService } from "../services/authService";
 
 function CriarRifaPage() {
   const navigate = useNavigate();
@@ -19,6 +21,8 @@ function CriarRifaPage() {
     descricaoPremio: "",
     telefoneContato: "",
   });
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,28 +31,21 @@ function CriarRifaPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErro("");
+    setSalvando(true);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/rifas`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(form),
-      });
-
-      if (!res.ok) {
-        const erro = await res.text();
-        throw new Error(`Erro ao criar rifa: ${erro}`);
-      }
-
-      const dados = await res.json();
-      console.log("Rifa criada:", dados);
+      await criarRifa(form);
       navigate("/admin");
     } catch (error) {
-      console.error("Erro ao criar rifa:", error);
-      alert("Erro ao criar rifa: " + error.message);
+      if (error.status === 401) {
+        authService.removeToken();
+        navigate("/admin/login");
+        return;
+      }
+      setErro(error.message || "Erro ao criar rifa.");
+    } finally {
+      setSalvando(false);
     }
   };
 
@@ -82,6 +79,11 @@ function CriarRifaPage() {
 
       <div className="max-w-2xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6 text-center">Criar Nova Rifa</h1>
+        {erro && (
+          <p className="mb-4 rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {erro}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -249,9 +251,10 @@ function CriarRifaPage() {
 
           <button
             type="submit"
+            disabled={salvando}
             className="w-full rounded bg-green-600 p-3 text-white font-semibold hover:bg-green-700"
           >
-            Criar Rifa
+            {salvando ? "Criando rifa..." : "Criar Rifa"}
           </button>
         </form>
       </div>

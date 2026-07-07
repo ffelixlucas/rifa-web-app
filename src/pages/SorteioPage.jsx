@@ -9,6 +9,8 @@ import {
 } from "react-icons/fa";
 import { IoIosArrowBack, IoIosRocket } from "react-icons/io";
 import SorteioAnimado from "../components/SorteioAnimado.jsx";
+import { buscarRifaAdmin, listarSorteiosDaRifa } from "../services/rifaApi";
+import { authService } from "../services/authService";
 
 function SorteioPage() {
   const { id } = useParams();
@@ -23,35 +25,28 @@ function SorteioPage() {
   const [inputValor, setInputValor] = useState("");
   const [ordem, setOrdem] = useState("asc");
   const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState("");
 
   useEffect(() => {
     async function carregarDados() {
       try {
         setLoading(true);
-        console.log("🌐 API URL:", import.meta.env.VITE_API_URL);
+        setErro("");
 
-        const token = localStorage.getItem("token");
+        const [dadosRifa, dadosSorteios] = await Promise.all([
+          buscarRifaAdmin(id),
+          listarSorteiosDaRifa(id),
+        ]);
 
-        const resRifa = await fetch(
-          `${import.meta.env.VITE_API_URL}/admin/rifas/${id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const dadosRifa = await resRifa.json();
         setRifa(dadosRifa);
-
-        const resSorteios = await fetch(
-          `${import.meta.env.VITE_API_URL}/admin/rifas/${id}/sorteios`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const dadosSorteios = await resSorteios.json();
         setSorteios(dadosSorteios);
       } catch (error) {
-        console.error("Erro ao carregar dados:", error);
-        navigate("/admin/login");
+        if (error.status === 401 || error.status === 403) {
+          authService.removeToken();
+          navigate("/admin/login");
+          return;
+        }
+        setErro(error.message || "Erro ao carregar dados do sorteio.");
       } finally {
         setLoading(false);
       }
@@ -97,7 +92,7 @@ function SorteioPage() {
             Rifa Não Encontrada
           </h2>
           <p className="text-purple-200 mb-6">
-            Esta rifa não existe ou você não tem acesso.
+            {erro || "Esta rifa não existe ou você não tem acesso."}
           </p>
           <button
             onClick={() => navigate("/admin")}
@@ -136,7 +131,6 @@ function SorteioPage() {
 
       <div className="relative z-10 px-4 py-6 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          {/* Cabeçalho */}
           <div className="flex items-center justify-between mb-12">
             <button
               onClick={() => navigate(`/admin/rifa/${id}`)}
@@ -160,8 +154,13 @@ function SorteioPage() {
             </div>
           </div>
 
+          {erro && (
+            <p className="mb-4 rounded border border-red-400/40 bg-red-900/30 px-3 py-2 text-sm text-red-200">
+              {erro}
+            </p>
+          )}
+
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Configurações */}
             <div className="lg:col-span-1 space-y-8">
               {!quantidadeSorteios && (
                 <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 p-8">
@@ -172,9 +171,7 @@ function SorteioPage() {
                     <h2 className="text-2xl font-bold text-white mb-2">
                       Quantos colocados você quer sortear?
                     </h2>
-                    <p className="text-purple-200">
-                      Defina a quantidade de premiados
-                    </p>
+                    <p className="text-purple-200">Defina a quantidade de premiados</p>
                   </div>
 
                   <div className="space-y-6">
@@ -189,11 +186,12 @@ function SorteioPage() {
                     <button
                       className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all"
                       onClick={() => {
-                        const numero = parseInt(inputValor);
-                        if (!isNaN(numero) && numero > 0) {
+                        const numero = Number.parseInt(inputValor, 10);
+                        if (!Number.isNaN(numero) && numero > 0) {
                           setQuantidadeSorteios(numero);
+                          setErro("");
                         } else {
-                          alert("Digite um número válido.");
+                          setErro("Digite um número válido para quantidade de sorteios.");
                         }
                       }}
                       disabled={!inputValor}
@@ -204,7 +202,6 @@ function SorteioPage() {
                 </div>
               )}
 
-              {/* Ordem */}
               {quantidadeSorteios && (
                 <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 p-8">
                   <h2 className="text-xl font-bold text-white mb-6 text-center">
@@ -229,15 +226,11 @@ function SorteioPage() {
                                 : "border-white/40"
                             }`}
                           >
-                            {ordem === tipo && (
-                              <FaStar className="text-white text-xs" />
-                            )}
+                            {ordem === tipo && <FaStar className="text-white text-xs" />}
                           </div>
                           <div className="flex-1">
                             <div className="font-semibold text-white">
-                              {tipo === "asc"
-                                ? "Do 1º ao último"
-                                : "Do último ao 1º"}
+                              {tipo === "asc" ? "Do 1º ao último" : "Do último ao 1º"}
                             </div>
                             <div className="text-purple-200 text-sm mt-1">
                               {tipo === "asc" ? "1 → 2 → 3" : "3 → 2 → 1"}
@@ -251,7 +244,6 @@ function SorteioPage() {
               )}
             </div>
 
-            {/* Sorteio */}
             <div className="lg:col-span-2 space-y-8">
               {podeSortear && (
                 <div className="text-center">
@@ -268,7 +260,6 @@ function SorteioPage() {
                 </div>
               )}
 
-              {/* Spinner entre sorteios */}
               {aguardandoProximo && (
                 <div className="flex flex-col items-center justify-center py-6 text-purple-300 animate-pulse">
                   <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-3"></div>
@@ -276,88 +267,38 @@ function SorteioPage() {
                 </div>
               )}
 
-              {/* Animação real */}
               {animando && (
                 <SorteioAnimado
                   rifaId={id}
                   ordem={ordem}
                   quantidadeSorteios={quantidadeSorteios}
                   onFinalizar={async (resultado) => {
-                    console.log("📞 Resultado recebido do sorteio:", resultado);
-                    console.log("📞 Telefone recebido:", resultado?.telefone);
-                    if (resultado) {
-                      setGanhador(resultado);
-                      setAguardandoProximo(true);
+                    if (!resultado) {
                       setAnimando(false);
-
-                      // envia whatsapp (chama backend)
-                      try {
-                        console.log("➡️ Enviando WhatsApp com payload:", {
-                          numero: resultado.telefone,
-                          nome: resultado.nome,
-                          titulo: rifa.titulo,
-                          numeroCota: resultado.numero,
-                        });
-
-                        await fetch(
-                          `${
-                            import.meta.env.VITE_API_URL
-                          }/admin/whatsapp/enviar`,
-                          {
-                            method: "POST",
-                            headers: {
-                              "Content-Type": "application/json",
-                              Authorization: `Bearer ${localStorage.getItem(
-                                "token"
-                              )}`,
-                            },
-                            body: JSON.stringify({
-                              numero: resultado.telefone,
-                              nome: resultado.nome,
-                              titulo: rifa.titulo,
-                              numeroCota: resultado.numero,
-                            }),
-                          }
-                        );
-                      } catch (err) {
-                        console.error("Erro ao enviar WhatsApp:", err);
-                      }
-
-                      // 🔁 dá tempo do backend gravar e busca lista atualizada
-                      await new Promise((r) => setTimeout(r, 1000));
-                      try {
-                        const res = await fetch(
-                          `${
-                            import.meta.env.VITE_API_URL
-                          }/admin/rifas/${id}/sorteios`,
-                          {
-                            headers: {
-                              Authorization: `Bearer ${localStorage.getItem(
-                                "token"
-                              )}`,
-                            },
-                          }
-                        );
-                        const atualizados = await res.json();
-                        setSorteios(atualizados);
-                      } catch (e) {
-                        console.error(
-                          "Erro ao atualizar lista de sorteios:",
-                          e
-                        );
-                      }
-
-                      // ⏱️ espera mais um pouco antes de liberar o próximo
-                      setTimeout(() => {
-                        setGanhador(null);
-                        setAguardandoProximo(false);
-                      }, 3000);
+                      return;
                     }
+
+                    setGanhador(resultado);
+                    setAguardandoProximo(true);
+                    setAnimando(false);
+
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+                    try {
+                      const atualizados = await listarSorteiosDaRifa(id);
+                      setSorteios(atualizados);
+                      setErro("");
+                    } catch (error) {
+                      setErro(error.message || "Erro ao atualizar lista de sorteios.");
+                    }
+
+                    setTimeout(() => {
+                      setGanhador(null);
+                      setAguardandoProximo(false);
+                    }, 3000);
                   }}
                 />
               )}
 
-              {/* Ganhador atual */}
               {ganhador && (
                 <div className="bg-gradient-to-br from-green-500/20 to-emerald-600/20 backdrop-blur-lg border border-green-400/30 rounded-3xl p-8 shadow-2xl animate-fade-in">
                   <div className="text-center">
@@ -365,17 +306,15 @@ function SorteioPage() {
                       {ganhador.colocacao === 1 && "🥇"}
                       {ganhador.colocacao === 2 && "🥈"}
                       {ganhador.colocacao === 3 && "🥉"}
-                      {ganhador.colocacao > 3 &&
-                        `🏅 ${ganhador.colocacao}º lugar`}
+                      {ganhador.colocacao > 3 && `🏅 ${ganhador.colocacao}º lugar`}
                       <span>
-                        Nº {ganhador.numero} — {ganhador.nome}
+                        Nº {ganhador.numero} - {ganhador.nome}
                       </span>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Lista de ganhadores */}
               <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
                 <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-8 text-center text-white text-2xl font-bold">
                   🏆 Ganhadores até agora
@@ -388,88 +327,76 @@ function SorteioPage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {Array.from({
-                        length: quantidadeSorteios || sorteios.length,
-                      }).map((_, index) => {
-                        const s = sorteios[index];
-                        function enviarMensagemWhatsApp() {
-                          if (!s.telefone) {
-                            alert(
-                              "Este participante não possui número de WhatsApp cadastrado."
-                            );
-                            return;
+                      {Array.from({ length: quantidadeSorteios || sorteios.length }).map(
+                        (_, index) => {
+                          const s = sorteios[index];
+
+                          function enviarMensagemWhatsApp() {
+                            if (!s?.telefone) {
+                              return;
+                            }
+
+                            let numeroLimpo = s.telefone.replace(/\D/g, "");
+                            if (!numeroLimpo.startsWith("55")) {
+                              numeroLimpo = `55${numeroLimpo}`;
+                            }
+
+                            const colocacaoTexto =
+                              s.colocacao === 1
+                                ? "🥇 1º lugar"
+                                : s.colocacao === 2
+                                ? "🥈 2º lugar"
+                                : s.colocacao === 3
+                                ? "🥉 3º lugar"
+                                : `${s.colocacao}º lugar`;
+
+                            const mensagem = `Parabéns ${s.nome}! 🎉 Você ficou em ${colocacaoTexto} na rifa "${rifa.titulo}". Número da sorte: ${s.numero}.`;
+                            const link = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(
+                              mensagem
+                            )}`;
+                            window.open(link, "_blank", "noopener,noreferrer");
                           }
 
-                          // 🔹 Remove tudo que não é número (espaço, +, traço, parênteses)
-                          let numeroLimpo = s.telefone.replace(/\D/g, "");
-
-                          // 🔹 Garante que o número começa com o DDI 55 (Brasil)
-                          if (!numeroLimpo.startsWith("55")) {
-                            numeroLimpo = "55" + numeroLimpo;
-                          }
-
-                          // 🔹 Monta o texto da mensagem com a colocação
-                          const colocacaoTexto =
-                            s.colocacao === 1
-                              ? "🥇 1º lugar"
-                              : s.colocacao === 2
-                              ? "🥈 2º lugar"
-                              : s.colocacao === 3
-                              ? "🥉 3º lugar"
-                              : `${s.colocacao}º lugar`;
-
-                          const mensagem = `Parabéns ${s.nome}! 🎉 Você ficou em ${colocacaoTexto} na rifa "${rifa.titulo}". Número da sorte: ${s.numero}.`;
-
-                          // 🔹 Cria o link do WhatsApp com o número limpo
-                          const link = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(
-                            mensagem
-                          )}`;
-
-                          console.log("🔗 Abrindo WhatsApp:", link);
-                          window.open(link, "_blank");
-                        }
-
-                        return (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/10 hover:border-white/20 transition-all"
-                          >
-                            {s ? (
-                              <>
-                                <div className="flex items-center gap-3 text-white font-semibold text-lg">
-                                  <span>{s.colocacao}º lugar</span>
-                                  <span>
-                                    Nº {s.numero} — {s.nome}
-                                  </span>
-                                </div>
-
-                                {s.telefone && (
-                                  <button
-                                    onClick={enviarMensagemWhatsApp}
-                                    className="relative flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-green-400/40 transition-all duration-300 group"
-                                    title="Enviar WhatsApp"
-                                  >
-                                    <FaWhatsapp
-                                      size={26}
-                                      className="text-white drop-shadow-md group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300"
-                                    />
-                                    <span className="absolute -bottom-6 text-xs text-green-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                      WhatsApp
+                          return (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/10 hover:border-white/20 transition-all"
+                            >
+                              {s ? (
+                                <>
+                                  <div className="flex items-center gap-3 text-white font-semibold text-lg">
+                                    <span>{s.colocacao}º lugar</span>
+                                    <span>
+                                      Nº {s.numero} - {s.nome}
                                     </span>
-                                  </button>
-                                )}
-                              </>
-                            ) : (
-                              <div className="flex items-center gap-3 text-purple-300 font-medium text-lg italic">
-                                <span>{index + 1}º lugar</span>
-                                <span className="text-purple-400/60">
-                                  aguardando sorteio...
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                                  </div>
+
+                                  {s.telefone && (
+                                    <button
+                                      onClick={enviarMensagemWhatsApp}
+                                      className="relative flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-green-400/40 transition-all duration-300 group"
+                                      title="Enviar WhatsApp"
+                                    >
+                                      <FaWhatsapp
+                                        size={26}
+                                        className="text-white drop-shadow-md group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300"
+                                      />
+                                      <span className="absolute -bottom-6 text-xs text-green-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        WhatsApp
+                                      </span>
+                                    </button>
+                                  )}
+                                </>
+                              ) : (
+                                <div className="flex items-center gap-3 text-purple-300 font-medium text-lg italic">
+                                  <span>{index + 1}º lugar</span>
+                                  <span className="text-purple-400/60">aguardando sorteio...</span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+                      )}
                     </div>
                   )}
                 </div>
